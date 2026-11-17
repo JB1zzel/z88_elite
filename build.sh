@@ -26,8 +26,7 @@ dd if=fast.bin of=elite_z88.bin bs=1 seek=$((0xB047-0x4000)) conv=notrunc status
 dd if=fast2.bin of=elite_z88.bin bs=1 seek=$((0xB349-0x4000)) conv=notrunc status=none
 dd if=ovl.bin of=elite_z88.bin bs=1 seek=$((0x8391-0x4000)) conv=notrunc status=none
 # 128K card (KLive wants a real EPROM size): game in banks $3C-$3E, application bank $3F.
-# The game goes in as three 16K files: z88card 2.1 loads nothing from a single binary
-# larger than 16K (LoadLargeBinary passes length 0 to LoadBytes).
-for k in 0 1 2; do dd if=elite_z88.bin of=bank3$(printf %X $((12+k))).bin bs=16384 skip=$k count=1 status=none; done
-$Z -sz 128 ../elite.epr bank3C.bin 3c0000 bank3D.bin 3d0000 bank3E.bin 3e0000 app.bin 3f0000 >/dev/null
+# 128K card: the 48K game image in banks $3C-$3E, the application bank on top
+# (needs z88card 2.2: 2.1 loaded nothing from a binary larger than 16K)
+$Z -sz 128 ../elite.epr elite_z88.bin 3c0000 app.bin 3f0000 >/dev/null
 echo "elite.epr: $(stat -c%s ../elite.epr) bytes; glue $(stat -c%s glue.bin) bytes"
