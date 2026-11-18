@@ -63,8 +63,9 @@ PATCH = {
     0xD99C: (3, ['CALL JT_CM_SAVE']),                                  # save commander to an OZ file
     0xE37D: (3, ['JPB', 'JT_TX_BAND']),                                      # lower text-line fill: also blanks the OZ text
     0xE2F0: (3, ['CALL JT_TX_ERASE']),                                 # typed-character erase: also in the OZ text
-    0x990C: (3, ['RET', 'NOP', 'NOP']),
-    0x818C: (2, ['NOP', 'NOP']),                                       # control panel save ($5000 -> $C000): $C000 is the Z88 view buffer, its scanner panel would be wiped                                # Spectrum scanner background copy ($5B00 <-> screen): the Z88 scanner is drawn by the glue
+    0x990C: (3, ['RET', 'NOP', 'NOP']),                                 # Spectrum scanner background copy ($5B00 <-> screen): the Z88 scanner is drawn by the glue
+    0x818C: (2, ['NOP', 'NOP']),                                       # control panel save ($5000 -> $C000): $C000 is the Z88 view buffer, its scanner panel would be wiped
+    0xD088: (2, ['NOP', 'NOP']),                                       # start-up copy of the panel image $C800 -> $C000: $C000 is the view buffer, $C800 a table (garbage in the scanner panel)
 }
 # fast.asm / fast2.asm (assembled first by build.sh into dead line-drawing code at
 # $B047-$B434): their entry points come by name from fast.def / fast2.def

@@ -6,6 +6,8 @@
 ; and off once per 20 ms frame following a short pattern - no loops, no cost.
 ; The game's sound switch is kept: bit 7 of $FC0E (freeze the game, then S on, Q off).
         module snd
+        org     $978B                   ; dead game code: the Spectrum blip plot after
+                                        ; 9788 JP JT_Z_BLIP (978B-982D); segment 2
         include "blink.def"
         include "elite.inc"
         include "ovl.def"               ; data kept in dead game code (ovl.asm)

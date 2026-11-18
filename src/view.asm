@@ -1165,8 +1165,9 @@ it_z2:  ld      l,a
         include "scanrle.inc"   ; (scanrt: row pointers, zero runs packed)
 
 ; z_blip: replaces the Spectrum blip plot at 9788.  From the game's signed offsets
-; ($96C0 x, $96C1 y = stalk, $96C2 z = depth) draw the stalk and 3-pixel end mark in the
-; panel, then continue the game's per-ship loop at 982E.
+; ($96C0 x, $96C1 y = stalk, $96C2 z = depth) draw the stalk and a 3 x 2 end mark in the
+; panel (the Spectrum's is 3 x 1, but on the Z88 there is no colour to pick a blip out of
+; the scanner's lines), then continue the game's per-ship loop at 982E.
 z_blip: ld      a,($96C0)               ; x' = 212 + 3/4 * (X - 124), X = 123+m or 124-m
         ld      b,a
         and     $7F
@@ -1200,17 +1201,23 @@ zb_zn:  add     a,SC_Y
         jr      z,zb_dir
         ld      a,$04                   ; INC B (down)
 zb_dir: ld      (zb_step),a
+        ld      (zb_st2),a
 zb_st:  call    pnl_plot
 zb_step: dec    b
         dec     e
         jr      nz,zb_st
 zb_mark:
-        call    pnl_plot                ; end mark: this pixel and two to its left
-        dec     c
-        call    pnl_plot
-        dec     c
-        call    pnl_plot
+        call    zb_m3                   ; end mark: 3 x 2, on past the stalk's end
+zb_st2: dec     b
+        inc     c
+        inc     c
+        call    zb_m3
         jp      $982E
+zb_m3:  call    pnl_plot                ; this pixel and two to its left
+        dec     c
+        call    pnl_plot
+        dec     c
+        jp      pnl_plot
 
 ; pnl_plot: C = map x (168..255), B = y' (signed byte): OR the pixel if in the panel
 pnl_plot:

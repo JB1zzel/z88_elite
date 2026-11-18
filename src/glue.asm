@@ -13,13 +13,14 @@
         include "director.def"
 
         org $2000
+        include "blink.def"
         include "elite.inc"
         include "ovl.def"
-        include "chart.def"             ; (chart.asm is assembled first)               ; data kept in dead game code (ovl.asm)
+        include "chart.def"             ; (chart.asm, snd.asm are assembled first)
+        include "snd.def"
         xdef    jt_z_halt
         xdef    jt_cm_enter, jt_cm_load, jt_cm_save, jt_tx_band, jt_tx_erase
         xref    tx_band, tx_erase
-        xref    snd_tick, snd_off, beep, snd_blk, snd_err
         xdef    jt_snd_blk, jt_snd_err
         xref    cm_enter, cm_load, cm_save
         xdef    jt_st_bit7hl
@@ -833,11 +834,45 @@ z_redraw:
         ld      c,MP_MEM
         ld      hl,256
         oz      Os_Map
+        jr      nc,zr_m
+        ld      a,'2'           ; MP_MEM is OZ 5: before it, define the map (MP_GRA)
+        ld      c,MP_GRA        ; and find it where the Blink shows it, HIRES0:
+        ld      hl,256          ; PB2 = address bits 21-13 (only read, not changed)
+        oz      Os_Map
         jr      c,zr_x
-        ld      a,b
+        ld      a,(BLSC_PB2L)
+        ld      h,$80           ; HL = $8000, or $A000 for the upper 8K of the bank
+        rra
+        jr      nc,zr_lo
+        ld      h,$A0
+zr_lo:  ld      l,0
+        ld      b,a             ; B = bank: PB2 >> 1 (bit 7 from the high byte)
+        ld      a,(BLSC_PB2H)
+        rra
+        jr      nc,zr_m
+        set     7,b
+zr_m:   ld      a,b
         ld      (V_MAPB),a
         ld      (V_MAPA),hl
-        call    instr_init
+        ld      c,2             ; clear the map (on a first start its memory holds
+        rst     OZ_MPB          ; whatever was there before)
+        push    bc
+        ld      hl,(V_MAPA)
+        ld      d,h
+        ld      e,l
+        inc     de
+        ld      bc,256*64/8-1
+        ld      (hl),0
+        ldir
+        pop     bc
+        ld      c,2
+        rst     OZ_MPB
+        ld      a,(TI_MODE)     ; the instruments, unless window 1 holds other text
+        ld      hl,TX_MODE      ; (the title - also at boot - a text screen, a chart)
+        or      (hl)
+        ld      hl,CH_MODE
+        or      (hl)
+        call    z,instr_init
 zr_x:   pop     hl
         pop     de
         pop     bc
@@ -876,6 +911,16 @@ z_start:                        ; segments 1 and 2 already hold game banks 1 and
         ld      (TT_REC),a
         ld      (SC_RM),a
         ld      (SC_RMOLD),a
+        ld      hl,VBUF         ; the view buffer: from the card it holds the Lenslok
+        ld      de,VBUF+1       ; code (the scanner panel shows it until restored)
+        ld      bc,VH/8*256-1          ; (8 cell rows of 256 bytes)
+        ld      (hl),a
+        ldir
+        ld      hl,$4001        ; the Spectrum screen too: the card image holds the
+        ld      de,$4002        ; loading screen, and the map shows it until the
+        ld      bc,$1800-2      ; first frames are drawn ($4000 itself is a flag
+        ld      (hl),a          ; the game tests at start-up: left alone)
+        ldir
         ld      a,2
         ld      (SC_ALL),a
         xor     a

@@ -19,7 +19,7 @@
         include "director.def"
         include "elite.inc"
         include "ovl.def"               ; data kept in dead game code (ovl.asm)
-        include "chart6.def"
+        include "ovl3.def"              ; ch_isrow, ch_wrow (ovl3.asm)
         xdef    tx_band, tx_erase
         xdef    msg_put, msg_update, msg_reset
         xdef    ti_7426
@@ -27,7 +27,7 @@
         xdef    tx_clsj
         xdef    tx_frame
         xdef    tx_route
-        xdef    tx_shclr, inr
+        xdef    tx_shclr
         xref    instr_update
         xref    out_byte
         xref    out_flush
@@ -475,7 +475,9 @@ tf_back:
         call    z_redraw                ; windows, map, instruments
         call    instr_update            ; (charts don't run the per-frame update)
         jr      tf_sc
-tf_ch:  call    z_redraw
+tf_ch:  call    z_redraw                ; (the map is cleared: render the chart again)
+        ld      a,13
+        ld      (CH_CNT),a
         call    ch_repaint
 tf_sc:  ld      a,2
         ld      (SC_ALL),a
@@ -489,39 +491,6 @@ tf_out: ld      a,(CH_MODE)             ; the short-range chart's systems
         cp      8
         call    z,OV_LIST
 tf_fl:  jp      out_flush
-
-; ---------------------------------------------------------------------------------------
-; Chart text.  ch_isrow: A = Spectrum row; Z if text on that row of the chart now up is
-; chart text (title rows 0-2; below the chart: galactic rows 19-23, short-range 21-23).
-ch_isrow:
-        cp      3
-        jr      c,ci_y
-        ld      b,a
-        ld      a,(TX_VIEW)
-        cp      7
-        ld      a,b
-        jr      nz,ci_s
-        cp      19
-        jr      nc,ci_y
-        jr      ci_n
-ci_s:   cp      21
-        jr      nc,ci_y
-ci_n:   or      1
-        ret
-ci_y:   xor     a
-        ret
-
-; ch_wrow: A = Spectrum row of chart text -> window 1 row (title 0, the rest 3-7)
-ch_wrow:
-        cp      3
-        jr      nc,cw_1
-        xor     a                       ; (rows 1-4: the short-range chart's systems)
-        ret
-cw_1:   sub     16
-        cp      3
-        ret     nc
-        ld      a,3
-        ret
 
 ; ch_enter: window 1 takes the chart's text (cleared on the first, and after the game
 ; cleared its screen)
@@ -875,28 +844,3 @@ te_x2:  pop     hl
         xor     a
         ld      b,8
         ret
-
-; ---------------------------------------------------------------------------------------
-; (for chart2.asm: no room there)
-; inr: C if system IX is within jump range (4 * sqrt(distance) <= fuel, $DFF2), and
-; not the present system
-inr:    ld      a,($D099)
-        ld      b,a
-        ld      a,($D097)
-        ld      c,a
-        call    ldist
-        ld      a,h
-        or      l
-        ret     z
-        push    hl
-        ld      a,($D082)               ; s < (fuel / 4 + 1)^2
-        srl     a
-        srl     a
-        inc     a
-        call    lsq
-        pop     de
-        ex      de,hl
-        or      a
-        sbc     hl,de
-        ret
-

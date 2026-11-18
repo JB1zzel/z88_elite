@@ -7,7 +7,7 @@ map, instruments and all text in OZ windows, keyboard read directly in flight,
 effects on the Z88 speaker.
 
 Card: elite.epr, 128K (works in OZvm and KLive). Needs an expanded Z88 with
-48K of free RAM. The application is "Elite" in the Index (#E).
+48K of free RAM (three free 16K banks), OZ 4.1 or later. The application is "Elite" in the Index (#E).
 
 Keys (the Spectrum's; LEFT SHIFT = CAPS SHIFT, RIGHT SHIFT = SYMBOL SHIFT)
   Flight      S/X climb/dive, N/M roll, SPACE faster, RIGHT SHIFT slower

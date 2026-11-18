@@ -7,6 +7,7 @@
         include "glue.def"
         include "chart.def"
         include "chart6.def"
+        include "ovl4.def"
         org     $E531
 
         jp      ch_cross                ; E52E (the game's crosshair) jumps here

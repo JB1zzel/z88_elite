@@ -1,6 +1,6 @@
 ; app.asm - Elite for the Cambridge Z88: application bank (boot code, glue copy, DOR).
 ; Card layout (128K): banks $38-$3B empty ($FF), banks $3C/$3D/$3E = the patched Spectrum game ($4000/$8000/$C000),
-; bank $3F = this bank.  Needs an expanded Z88 (three free 16K RAM banks) and OZ 5.
+; bank $3F = this bank.  Needs an expanded Z88 (three free 16K RAM banks).
         module eliteapp
         include "stdio.def"
         include "dor.def"
@@ -38,44 +38,43 @@ app_entrypoint:
         ld      a,b
         ld      (V_CARD),a
 
-; --- three whole RAM banks: 3 x 64 exclusive 256-byte allocations ------------------------
-        ld      a,MM_S1|MM_EXC
-        ld      bc,0
-        oz      Os_Mop
-        jp      c,no_mem
+; --- three whole RAM banks: one memory pool each, 64 x 256 bytes ---------------------------
+; A pool without MM_EXC/MM_MUL takes its memory from one bank, the most free one, at most
+; 16K (MM_EXC, exclusive free banks, is OZ 5 only).  64 pages must all come from that
+; one bank, so the pool owns it whole; in which order the pages come does not matter.
         ld      de,V_BANKS
         ld      a,3
 bk_lp:  push    af
-        ld      bc,256
-        oz      Os_Mal
+        push    de
+        ld      a,MM_S1
+        ld      bc,0
+        oz      Os_Mop                  ; IX = the pool
+        pop     de
         jp      c,no_mem2
-        ld      a,h             ; must be the start of a fresh bank
-        cp      $40
-        jp      nz,no_mem2
-        ld      a,l
-        and     a
-        jp      nz,no_mem2
-        ld      a,b
-        ld      (de),a
-        ld      c,63
-bk_rest:
-        push    bc
+        ld      c,64
+bk_pg:  push    bc
+        push    de
         ld      bc,256
-        oz      Os_Mal
+        oz      Os_Mal                  ; BHL = a page (HL in segment 1)
         ld      a,b
+        pop     de
         pop     bc
         jp      c,no_mem2
-        push    hl
-        ld      hl,V_LOG
-        ld      (hl),a
-        pop     hl
-        ld      a,(de)
-        ld      b,a
-        ld      a,(V_LOG)
-        cp      b               ; same bank all the way
-        jp      nz,no_mem2
-        dec     c
-        jr      nz,bk_rest
+        ex      af,af'
+        ld      a,c
+        cp      64
+        jr      nz,bk_same
+        ex      af,af'                  ; the first: this pool's bank
+        ld      (de),a
+        jr      bk_nx
+bk_same:
+        ex      af,af'
+        ex      de,hl                   ; (HL = V_BANKS entry; DE = the page)
+        cp      (hl)
+        ex      de,hl
+        jp      nz,no_mem2              ; another bank: not one whole free bank
+bk_nx:  dec     c
+        jr      nz,bk_pg
         inc     de
         pop     af
         dec     a
@@ -106,6 +105,8 @@ cp_lp:  push    de
         dec     d
         jr      nz,cp_lp
 
+        ld      a,1
+        ld      (TI_MODE),a        ; (no instruments yet: the title comes first)
         call    JT_Z_REDRAW        ; windows and map
         ld      a,(V_BANKS)
         ld      b,a
