@@ -27,8 +27,9 @@
         include "chart3.def"
         include "chart4.def"
         include "chart5.def"
+        include "ovl3.def"
         org     $9551
-        xdef    mbind, cx_draw, ch_render
+        xdef    cx_draw, ch_render
 
 ; zxaddr: A = Spectrum pixel row -> HL = its first byte
 zxaddr: ld      l,a
@@ -47,20 +48,6 @@ zxaddr: ld      l,a
         rlca
         rlca
         ld      l,a
-        ret
-
-; bind the map into segment C (1 or 3): CR_HI = its high address byte; B = old bank
-mbind:  ld      a,c
-        rrca
-        rrca
-        ld      e,a                     ; segment * $40
-        ld      a,(V_MAPA+1)
-        and     $3F
-        or      e
-        ld      (CR_HI),a
-        ld      a,(V_MAPB)
-        ld      b,a
-        rst     OZ_MPB
         ret
 
 ; ch_render: the whole chart into the map, then the numbers and the cursor(s)
@@ -139,7 +126,7 @@ cr_nx:  pop     af
         jr      c,cr_row
         pop     bc
         ld      c,3
-        rst     OZ_MPB                  ; game bank 3 back
+        call    MPB                  ; game bank 3 back
         ld      c,1                     ; the numbers and the cursors: map in segment 1
         call    mbind
         push    bc
@@ -189,8 +176,8 @@ cr_c1:  push    bc
         djnz    cr_c1
 cr_x:   pop     bc
         ld      c,1
-        rst     OZ_MPB                  ; game bank 1 back
-        ret
+        call    MPB                  ; game bank 1 back
+        jp      MFFULL                  ; (a 240-pixel map: VBUF to it)
 
 ; cx_draw: HL = x, y, arm: XOR a "+" into the map (in segment 1): the bar across at
 ; row y, the bar down at column x, each arm/2 to either side

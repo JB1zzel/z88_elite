@@ -6,6 +6,7 @@
         include "elite.inc"
         include "glue.def"
         include "chart.def"
+        include "ovl3.def"
         include "chart6.def"
         include "ovl4.def"
         org     $E531
@@ -79,7 +80,8 @@ cc_go:  ld      c,1
         call    cx_draw
         pop     bc
         ld      c,1
-        rst     OZ_MPB
+        call    MPB
+        call    MFFULL                  ; (a 240-pixel map: VBUF to it)
         pop     ix
         pop     hl
         pop     de

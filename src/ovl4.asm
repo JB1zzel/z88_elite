@@ -5,7 +5,7 @@
         include "elite.inc"
         include "chart6.def"
         org     $7D12
-        xdef    inr
+        xdef    inr, ch_wrow
 
 ; inr: C if system IX is within jump range (4 * sqrt(distance) <= fuel, $DFF2), and
 ; not the present system
@@ -27,5 +27,17 @@ inr:    ld      a,($D099)
         ex      de,hl
         or      a
         sbc     hl,de
+        ret
+
+; ch_wrow: A = Spectrum row of chart text -> window 1 row (title 0, the rest 3-7)
+ch_wrow:
+        cp      3
+        jr      nc,cw_1
+        xor     a                       ; (rows 1-4: the short-range chart's systems)
+        ret
+cw_1:   sub     16
+        cp      3
+        ret     nc
+        ld      a,3
         ret
 

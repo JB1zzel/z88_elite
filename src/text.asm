@@ -19,7 +19,8 @@
         include "director.def"
         include "elite.inc"
         include "ovl.def"               ; data kept in dead game code (ovl.asm)
-        include "ovl3.def"              ; ch_isrow, ch_wrow (ovl3.asm)
+        include "ovl3.def"              ; ch_isrow (ovl3.asm)
+        include "ovl4.def"              ; ch_wrow
         xdef    tx_band, tx_erase
         xdef    msg_put, msg_update, msg_reset
         xdef    ti_7426

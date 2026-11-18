@@ -1,10 +1,10 @@
-; ovl3.asm - small glue routines kept in dead game code 9852-988D (the end of the
+; ovl3.asm - small glue and chart routines kept in dead game code 9852-988D (the end of the
 ; Spectrum blip plot, 9788 JP JT_Z_BLIP; never reached); segment 2, assembled before the
 ; glue (-> ovl3.def)
         module  ovl3
         include "elite.inc"
         org     $9852
-        xdef    ch_isrow, ch_wrow
+        xdef    ch_isrow, mbind
 
 ; Chart text.  ch_isrow: A = Spectrum row; Z if text on that row of the chart now up is
 ; chart text (title rows 0-2; below the chart: galactic rows 19-23, short-range 21-23).
@@ -26,15 +26,17 @@ ci_n:   or      1
 ci_y:   xor     a
         ret
 
-; ch_wrow: A = Spectrum row of chart text -> window 1 row (title 0, the rest 3-7)
-ch_wrow:
-        cp      3
-        jr      nc,cw_1
-        xor     a                       ; (rows 1-4: the short-range chart's systems)
-        ret
-cw_1:   sub     16
-        cp      3
-        ret     nc
-        ld      a,3
+; bind the map into segment C (1 or 3): CR_HI = its high address byte; B = old bank
+mbind:  ld      a,c
+        rrca
+        rrca
+        ld      e,a                     ; segment * $40
+        ld      a,(V_MAPA+1)
+        and     $3F
+        or      e
+        ld      (CR_HI),a
+        ld      a,(V_MAPB)
+        ld      b,a
+        call    MPB
         ret
 

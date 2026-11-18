@@ -106,6 +106,12 @@ defc MSG_SHN  = $CCCE                   ; ... and as shown in window 1
 defc MSG_W    = 23                      ; cells per line (window 1, columns 28-50)
 defc CH_MODE  = $3E5F                   ; 1 = window 1 holds a chart's text (no instruments)
 ; charts (chart.asm, overlaid on the dead beeper player at $9551)
+defc MW240    = $3E87                   ; 1: a 240-pixel map (OZ before 5), drawn in VBUF
+defc R_MAPB   = $3E88                   ; the map itself (V_MAPB/V_MAPA: where to draw)
+defc R_MAPA   = $3E89
+defc MF_MODE  = $3E8B
+defc MPB      = $2000                   ; glue: bind (RST 30H, or OZ Os_Mpb before OZ 4.1)
+defc MFFULL   = $2004                   ; glue: the map buffer (VBUF) to a 240-pixel map
 defc OV_CROSS  = $E531                  ; the chart cursor, XORed into the map (chart2.asm)
 defc OV_LIST   = $E534                  ; the numbered systems into window 1 (chart2.asm)
 defc CH_VIEW  = $3E80                   ; chart.asm: TX_VIEW, kept while the map is in segment 1

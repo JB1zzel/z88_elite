@@ -26,6 +26,27 @@ app_entrypoint:
         ld      de,$2000
         ld      bc,glue_end-glue_bin
         ldir
+        ld      hl,($0031)      ; RST 30H fast bank binding (OZ 4.1 on)?  Its code starts
+        inc     hl              ; PUSH, PUSH, LD HL,$04D0: if not, the glue's MPB
+        inc     hl              ; ($2000) becomes OZ Os_Mpb, RET
+        ld      a,(hl)
+        cp      $21
+        jr      nz,old_oz
+        inc     hl
+        ld      a,(hl)
+        cp      $D0
+        jr      nz,old_oz
+        inc     hl
+        ld      a,(hl)
+        cp      $04
+        jr      z,new_oz
+old_oz: ld      hl,MPB
+        ld      (hl),$E7        ; RST 20H
+        inc     hl
+        ld      (hl),Os_Mpb
+        inc     hl
+        ld      (hl),$C9        ; RET
+new_oz:
         xor     a
         ld      b,a
         ld      hl,JT_Z_ERRHAN
@@ -90,10 +111,10 @@ cp_lp:  push    de
         push    hl
         ld      b,e
         ld      c,1
-        rst     OZ_MPB          ; card bank -> segment 1
+        oz      Os_Mpb          ; card bank -> segment 1
         ld      b,(hl)
         ld      c,2
-        rst     OZ_MPB          ; RAM bank -> segment 2
+        oz      Os_Mpb          ; RAM bank -> segment 2
         ld      hl,$4000
         ld      de,$8000
         ld      bc,$4000
@@ -111,11 +132,11 @@ cp_lp:  push    de
         ld      a,(V_BANKS)
         ld      b,a
         ld      c,1
-        rst     OZ_MPB
+        oz      Os_Mpb
         ld      a,(V_BANKS+1)
         ld      b,a
         ld      c,2
-        rst     OZ_MPB
+        oz      Os_Mpb
         jp      JT_Z_START         ; glue binds segment 3 and starts the game
 
 no_mem2:
@@ -216,7 +237,9 @@ hlp_scr:
         defm    "chart. On the left are the instruments (fuel, shields,", $7F
         defm    "temperatures, speed, roll and dive, energy banks, missiles,", $7F
         defm    "compass), the view's name and the flight messages. Text screens", $7F
-        defm    "such as Status and Market Prices fill the whole width.", 0
+        defm    "such as Status and Market Prices fill the whole width. On OZ 4", $7F
+        defm    "and earlier the map is 240 pixels wide (no wider map shows):", $7F
+        defm    "the view, scanner and charts lose 8 pixels at either side.", 0
 hlp_leave:
         defm    "INDEX suspends the game and it carries on where you left it.", $7F
         defm    "ESC does not quit; to end the game, KILL it from the Index.", 0
@@ -268,7 +291,7 @@ hlp_port:
         defm    "instruments natively, puts all text in OZ windows, reads the", $7F
         defm    "keyboard directly in flight, and plays the effects on the Z88's", $7F
         defm    "speaker. The Lenslok check is gone. Needs an expanded Z88 with", $7F
-        defm    "48K of free RAM.", 0
+        defm    "48K of free RAM, and OZ 3.0 or later.", 0
 end_of_code:
         defs    $3FC0-end_of_code
         doraplf [in_dor & $3FFF, BANK_APPL]

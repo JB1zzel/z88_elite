@@ -15,12 +15,12 @@
         include "error.def"
         include "director.def"
         include "elite.inc"
+        xref    mf_split
         include "ovl.def"               ; data kept in dead game code (ovl.asm)
         xref    msg_put
         xdef    hk_glyph
         xdef    init_tables
         xdef    scan_restore
-        xdef    sq_font
         xdef    view_copy
         xdef    z_blip
         xdef    z_circ
@@ -904,17 +904,20 @@ sp_lp:  ld      a,(hl)
 ; ---------------------------------------------------------------------------------------
 ; view_copy: the view (8 rows x 168 bytes) into the left of the map (map bound in seg. 2)
 view_copy:
-        ld      a,(V_MAPB)
-        ld      b,a
-        ld      c,2
-        rst     OZ_MPB
-        push    bc
         ld      a,(V_VAGE)              ; first view frame after a text screen: the whole
         cp      25                      ; scanner panel again
         jr      c,vc_nv
         ld      a,2
         ld      (SC_ALL),a
-vc_nv:  ld      a,(SC_ALL)              ; scanner rows to copy: all for a new background,
+vc_nv:  ld      a,(MW240)               ; a 240-pixel map: all of VBUF, copied across
+        and     a
+        jp      nz,mf_split
+        ld      a,(V_MAPB)
+        ld      b,a
+        ld      c,2
+        call    MPB
+        push    bc
+        ld      a,(SC_ALL)              ; scanner rows to copy: all for a new background,
         and     a                       ; else rows with blips now or last frame
         ld      a,$FF
         jr      nz,vc_all
@@ -948,7 +951,7 @@ vc_ns:  pop     de
         jp      nz,vc_lp
 vc_x:   pop     bc
         ld      c,2
-        rst     OZ_MPB
+        call    MPB
         ret
 
 ; ---------------------------------------------------------------------------------------
@@ -1094,34 +1097,6 @@ hg_q:   inc     l                       ; next pixel row (rows 4r..4r+3 share a 
         djnz    hg_r
 hg_x:   ld      hl,(G_HL)
         ret                             ; back to print_char's caller
-
-sq5:    include "sq5.inc"
-
-; sq_font: squeeze the 96-character Spectrum font (at $5D70) to 5x4 pixel glyphs, once
-sq_font:
-        ld      hl,$5D70
-        ld      de,SQFONT
-        ld      bc,96*4
-sf_lp:  push    bc
-        ld      a,(hl)
-        inc     hl
-        or      (hl)
-        inc     hl
-        push    hl
-        ld      l,a
-        ld      h,0
-        ld      bc,sq5
-        add     hl,bc
-        ld      a,(hl)
-        ld      (de),a
-        inc     de
-        pop     hl
-        pop     bc
-        dec     bc
-        ld      a,b
-        or      c
-        jr      nz,sf_lp
-        ret
 
 ; init_tables: scale table, pixel masks, keyboard selector table
 init_tables:
