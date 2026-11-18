@@ -764,7 +764,33 @@ rn_ch:  ld      hl,CH_SAFE      ; a chart (chart.asm): rendered again only after
         dec     a
         ld      (CH_CNT),a
 rn_go:  ld      (hl),0
-        jp      ch_render       ; (chart.asm)
+        ld      a,(MW240)       ; a 240-pixel map: drawn in VBUF and copied already
+        and     a
+        jp      nz,ch_render    ; (chart.asm)
+        ld      hl,(V_MAPA)     ; 256: drawn in VBUF too, then copied whole, so the
+        push    hl              ; numbers are never seen erased between the renders
+        ld      a,(V_MAPB)      ; while the game draws the chart
+        push    af
+        ld      a,(V_BANKS+2)
+        ld      (V_MAPB),a
+        ld      hl,$8000
+        ld      (V_MAPA),hl
+        call    ch_render
+        pop     af
+        ld      (V_MAPB),a
+        pop     hl
+        ld      (V_MAPA),hl
+        ld      b,a
+        ld      c,2
+        call    MPB
+        push    bc
+        ex      de,hl
+        ld      hl,VBUF
+        ld      bc,256*VH/8
+        ldir
+        pop     bc
+        ld      c,2
+        jp      MPB
 rn_std: ld      a,(V_MAPB)
         ld      b,a
         ld      c,2
