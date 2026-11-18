@@ -17,6 +17,9 @@ Keys (the Spectrum's; LEFT SHIFT = CAPS SHIFT, RIGHT SHIFT = SYMBOL SHIFT)
   Weapons     A or 0 laser, T target missile, F fire it, U unarm,
               E ECM, W energy bomb, Q escape pod, C docking computer
               TAB forces an encounter (added for this version)
+  Condition   in flight, the box under the compass: G nothing about,
+              A other ships about, R danger (hostile ship, or 2 energy
+              banks empty) - added for this version
   Jumps       H hyperspace to the chart's selected system,
               G+H galactic hyperdrive
   Screens     I galactic chart, O short-range chart, P data on system,

@@ -80,6 +80,7 @@ defc SQFONT  = $CA00                    ; 96 x 4 bytes
 defc IN_SHAD  = $CB80                   ; 13 x 7 cell shadows ($FF = unknown)
 defc IN_MISS  = $CBE0                   ; missile count shown ($FF = unknown)
 defc IN_COMP  = $CBE1                   ; compass h, v, behind shown
+defc IN_COND  = $CBE4                   ; condition letter shown
 defc IN_CBUF  = $CC80                   ; compass canvas: 16 words
 defc IN_VAL   = $CBF0                   ; 13 bar values last shown ($FF = unknown)
 defc OUTBUF   = $3F48                   ; output string (S0: GN_Sop reads local memory)

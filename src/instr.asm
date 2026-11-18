@@ -20,6 +20,7 @@
         include "error.def"
         include "director.def"
         include "elite.inc"
+        include "snd.def"
         xref    msg_reset
         xdef    in_reset
         xdef    instr_init
@@ -88,7 +89,7 @@ in_reset:
         call    msg_reset               ; (and the flight text)
         ld      hl,IN_SHAD
         ld      de,IN_SHAD+1
-        ld      bc,$64-1
+        ld      bc,$65-1
         ld      (hl),$FF
         ldir
         ld      hl,IN_VAL
@@ -314,7 +315,31 @@ iu_next:
         jp      nz,iu_bar
         call    in_missiles
         call    in_compass
-        jp      out_flush
+        call    out_flush
+; condition (columns 23-25, row 3, reverse): R with two energy banks (nearly) empty or a
+; hostile ship about, A other ships about, G none
+        ld      hl,$70F6                ; energy banks 1-4 (bars 8-11)
+        ld      bc,$0400
+ic_e:   ld      a,(hl)
+        cp      16
+        jr      nc,ic_f
+        inc     c
+ic_f:   inc     hl
+        inc     hl
+        djnz    ic_e
+        ld      a,c
+        cp      2
+        ld      a,'R'
+        call    c,SND_COND
+        ld      hl,IN_COND
+        cp      (hl)
+        ret     z
+        ld      (hl),a
+        ld      (ic_c),a
+        ld      hl,ic_s
+        jp      puts
+ic_s:   defb    1,'3','@',32+23,32+3,1,'2','+','R',' '
+ic_c:   defb    'G',' ',1,'2','-','R',0
 
 ; missiles: 4 cells at column 3, row 6.  The last ready missile shows the arm state
 ; ($D047: 1 = armed 'S', 2 = locked 'T'), as the Spectrum colours its indicator.

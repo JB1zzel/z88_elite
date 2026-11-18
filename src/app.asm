@@ -236,7 +236,10 @@ hlp_game:
         defm    "You start docked at Lave with a Cobra Mk III, 100 credits and a", $7F
         defm    "pulse laser. Trade between systems, fight pirates and police,", $7F
         defm    "buy better equipment, and work your way up from Harmless to", $7F
-        defm    "Elite across eight galaxies.", 0
+        defm    "Elite across eight galaxies.", $7F
+        defm    "In flight the box under the compass shows the condition: G", $7F
+        defm    "nothing about, A other ships about, R danger (a hostile ship,", $7F
+        defm    "or two energy banks empty).", 0
 hlp_scr:
         defm    "The map on the right holds the 3D view and the scanner, or a", $7F
         defm    "chart. On the left are the instruments (fuel, shields,", $7F

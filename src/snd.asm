@@ -11,7 +11,7 @@
         include "blink.def"
         include "elite.inc"
         include "ovl.def"               ; data kept in dead game code (ovl.asm)
-        xdef    snd_tick, snd_off, beep, snd_blk, snd_err
+        xdef    snd_tick, snd_off, beep, snd_blk, snd_err, snd_cond
 
 ; per-frame (from the frame work): the next frame of the effect playing, else start the
 ; highest-priority one the game queued in $7128 (lowest bit first, as the game does)
@@ -92,3 +92,24 @@ snd_err:
         ld      de,$0015
         jr      snd_go
 
+
+; snd_cond (kept here for room): the condition from the ship slots 1-7 ($27 bytes from
+; $6048; in use: energy $22 nonzero; cargo, boulders, pods: $26 bit 3) -> A = 'G' none,
+; 'A' ships about, 'R' a hostile one (spawned hostile: $26 bit 6)
+snd_cond:
+        ld      ix,$6048+$27
+        ld      de,$27
+        ld      bc,$0700+'G'
+sc_lp:  ld      a,(ix+$22)
+        and     a
+        jr      z,sc_nx
+        bit     3,(ix+$26)
+        jr      nz,sc_nx
+        bit     6,(ix+$26)
+        ld      a,'R'
+        ret     nz
+        ld      c,'A'
+sc_nx:  add     ix,de
+        djnz    sc_lp
+        ld      a,c
+        ret
