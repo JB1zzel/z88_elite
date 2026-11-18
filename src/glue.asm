@@ -836,6 +836,9 @@ z_redraw:
         push    hl
         ld      hl,win
         call    puts
+        ld      a,(MPB)         ; OZ before 4.1 (MPB made OS_Mpb at boot): 240 at once,
+        cp      $E7             ; no 256 try (MP_MEM there is an Internal error)
+        jr      z,zr_240
         ld      hl,256          ; a 256-pixel map, if this OZ shows one (OZ 5) ...
         call    zr_def
         jp      c,zr_x
