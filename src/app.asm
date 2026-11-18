@@ -22,6 +22,11 @@ defc SAFEDATA = 0
 app_entrypoint:
         ld      a,SC_DIS
         oz      Os_Esc
+        ld      hl,$3E00        ; the front end's variables start cleared: OZ does not
+        ld      de,$3E01        ; clear application RAM, so after a KILL a new start
+        ld      bc,$01FF        ; would find the old instance's state (in flight)
+        ld      (hl),0
+        ldir
         ld      hl,glue_bin     ; glue code into application RAM
         ld      de,$2000
         ld      bc,glue_end-glue_bin
