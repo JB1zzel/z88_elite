@@ -160,8 +160,8 @@ in_dor:
                  [in_help, BANK_APPL],                     \
                  ,                                         \
                  BANK_APPL)
-; each topic owns the next group of in_commands (groups end with defb 1).  Help text is
-; written as whole paragraphs: OZ wraps it to the width of the help window.
+; each topic owns the next group of in_commands (groups end with defb 1).  OZ does not
+; wrap help text: lines are broken ($7F) at 63 characters, at most 7 lines a page.
 in_topics:
         defb    0
         mthtpc  ["Info"], TPCF_INFO|TPCF_HELP, (hlp_info-in_help)
@@ -188,50 +188,90 @@ in_commands:
         defb    1
         defb    0
 
-in_help:
-        defm    "ELITE", $7F, $7F
-        defm    "The ZX Spectrum Elite for the expanded Z88: the original Z80 game code runs here, with its graphics and text redrawn for the Z88 screen.", $7F, $7F
+in_help:                                ; a help page holds 7 lines of 63 characters
+        defm    "ELITE", $7F
+        defm    $7F
+        defm    "The ZX Spectrum Elite for the expanded Z88: the original Z80", $7F
+        defm    "game code runs here, with its graphics and text redrawn for the", $7F
+        defm    "Z88 screen.", $7F
+        defm    $7F
         defm    "The MENU topics have the keys.", 0
 
 hlp_info:
         defm    "The game, the screen, and leaving it.", 0
 hlp_keys:
-        defm    "The Spectrum keys, as in the original. LEFT SHIFT is the Spectrum's CAPS SHIFT and RIGHT SHIFT its SYMBOL SHIFT.", 0
+        defm    "The Spectrum keys, as in the original. LEFT SHIFT is the", $7F
+        defm    "Spectrum's CAPS SHIFT and RIGHT SHIFT its SYMBOL SHIFT.", 0
 hlp_cred:
         defm    "Who wrote what.", 0
 
 hlp_game:
-        defm    "You start docked at Lave with a Cobra Mk III, 100 credits and a pulse laser. Trade between systems, fight pirates and police, buy better equipment, and work your way up from Harmless to Elite across eight galaxies.", 0
+        defm    "You start docked at Lave with a Cobra Mk III, 100 credits and a", $7F
+        defm    "pulse laser. Trade between systems, fight pirates and police,", $7F
+        defm    "buy better equipment, and work your way up from Harmless to", $7F
+        defm    "Elite across eight galaxies.", 0
 hlp_scr:
-        defm    "The map on the right holds the 3D view and the scanner, or a chart. On the left are the instruments (fuel, shields, temperatures, speed, roll and dive, energy banks, missiles, compass), the view's name and the flight messages. Text screens such as Status and Market Prices fill the whole width.", 0
+        defm    "The map on the right holds the 3D view and the scanner, or a", $7F
+        defm    "chart. On the left are the instruments (fuel, shields,", $7F
+        defm    "temperatures, speed, roll and dive, energy banks, missiles,", $7F
+        defm    "compass), the view's name and the flight messages. Text screens", $7F
+        defm    "such as Status and Market Prices fill the whole width.", 0
 hlp_leave:
-        defm    "INDEX suspends the game and it carries on where you left it. ESC does not quit; to end the game, KILL it from the Index.", 0
+        defm    "INDEX suspends the game and it carries on where you left it.", $7F
+        defm    "ESC does not quit; to end the game, KILL it from the Index.", 0
 
 hlp_fly:
-        defm    "S and X climb and dive, N and M roll. SPACE speeds up and RIGHT SHIFT slows down. 1, 2, 3 and 4 show the front, rear, left and right views. Docked, 1 launches.", 0
+        defm    "S and X climb and dive, N and M roll. SPACE speeds up and RIGHT", $7F
+        defm    "SHIFT slows down. 1, 2, 3 and 4 show the front, rear, left and", $7F
+        defm    "right views. Docked, 1 launches.", 0
 hlp_weap:
-        defm    "A (or 0) fires the laser. T targets a missile, F fires it and U unarms it. E sets off the ECM, W the energy bomb, Q launches the escape pod and C switches on the docking computer: each only once fitted.", $7F, $7F
-        defm    "TAB brings an enemy in at once (added for this version, for practice).", 0
+        defm    "A (or 0) fires the laser. T targets a missile, F fires it and U", $7F
+        defm    "unarms it. E sets off the ECM, W the energy bomb, Q launches", $7F
+        defm    "the escape pod and C switches on the docking computer: each", $7F
+        defm    "only once fitted.", $7F
+        defm    $7F
+        defm    "TAB brings an enemy in at once (added for this version, for", $7F
+        defm    "practice).", 0
 hlp_jump:
-        defm    "Pick a system on a chart, then press H in flight: the countdown starts and the jump follows if you have the fuel. With a galactic hyperdrive fitted, G and H together take you to the next galaxy.", 0
+        defm    "Pick a system on a chart, then press H in flight: the countdown", $7F
+        defm    "starts and the jump follows if you have the fuel. With a", $7F
+        defm    "galactic hyperdrive fitted, G and H together take you to the", $7F
+        defm    "next galaxy.", 0
 hlp_screens:
-        defm    "I galactic chart, O short-range chart, P data on the system, K market prices, L status, ENTER inventory. Docked: 2 buys cargo, 3 sells cargo, 4 equips the ship.", 0
+        defm    "I galactic chart, O short-range chart, P data on the system, K", $7F
+        defm    "market prices, L status, ENTER inventory. Docked: 2 buys cargo,", $7F
+        defm    "3 sells cargo, 4 equips the ship.", 0
 hlp_chart:
-        defm    "N, M, S and X move the cursor, B puts it back on your system, D gives the distance to the nearest system and R finds a system by name. The chart is in the map (the short-range chart scrolls with the cursor); its title and the selected system are on the left.", 0
+        defm    "N, M, S and X move the cursor, B puts it back on your system, D", $7F
+        defm    "gives the distance to the nearest system and R finds a system", $7F
+        defm    "by name. The chart is in the map (the short-range chart scrolls", $7F
+        defm    "with the cursor); its title and the selected system are on the", $7F
+        defm    "left.", 0
 hlp_freeze:
-        defm    "LEFT SHIFT freezes the game. Then SPACE carries on and 1 starts a new game. S turns the sound on and Q turns it off. B, D, R, Y and K set the Spectrum's joystick and keyboard options.", 0
+        defm    "LEFT SHIFT freezes the game. Then SPACE carries on and 1 starts", $7F
+        defm    "a new game. S turns the sound on and Q turns it off. B, D, R, Y", $7F
+        defm    "and K set the Spectrum's joystick and keyboard options.", 0
 hlp_save:
-        defm    "Docked, RIGHT SHIFT opens the commander menu: 1 loads, 2 saves, 3 goes back. A commander is saved as a file named after him, with .elt added (JAMESON.elt for the default name).", 0
+        defm    "Docked, RIGHT SHIFT opens the commander menu: 1 loads, 2 saves,", $7F
+        defm    "3 goes back. A commander is saved as a file named after him,", $7F
+        defm    "with .elt added (JAMESON.elt for the default name).", 0
 
 hlp_elite:
-        defm    "Elite by Ian Bell and David Braben (1984). The ZX Spectrum version by Torus, published by Firebird in 1985. This card runs that version's Z80 code, taken from the elite-skoolkit disassembly.", 0
+        defm    "Elite by Ian Bell and David Braben (1984). The ZX Spectrum", $7F
+        defm    "version by Torus, published by Firebird in 1985. This card runs", $7F
+        defm    "that version's Z80 code, taken from the elite-skoolkit", $7F
+        defm    "disassembly.", 0
 hlp_port:
-        defm    "The Z88 front end draws the 3D view, scanner, charts and instruments natively, puts all text in OZ windows, reads the keyboard directly in flight, and plays the effects on the Z88's speaker. The Lenslok check is gone. Needs an expanded Z88 with 48K of free RAM.", 0
+        defm    "The Z88 front end draws the 3D view, scanner, charts and", $7F
+        defm    "instruments natively, puts all text in OZ windows, reads the", $7F
+        defm    "keyboard directly in flight, and plays the effects on the Z88's", $7F
+        defm    "speaker. The Lenslok check is gone. Needs an expanded Z88 with", $7F
+        defm    "48K of free RAM.", 0
 end_of_code:
         defs    $3FC0-end_of_code
         doraplf [in_dor & $3FFF, BANK_APPL]
         defs    $FFF8-$FFD3
         defb    $60,$61,$60,$C8         ; card id
         defb    8                       ; card size in banks (128K)
-        defb    0                       ; sub type
+        defb    $7C                     ; sub type: $7C = 128K (or larger) EPROM
         defm    "OZ"
