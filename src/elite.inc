@@ -105,7 +105,33 @@ defc MSG_NOW  = $CCA0                   ; flight text lines this frame: 2 x 23 c
 defc MSG_SHN  = $CCCE                   ; ... and as shown in window 1
 defc MSG_W    = 23                      ; cells per line (window 1, columns 28-50)
 defc CH_MODE  = $3E5F                   ; 1 = window 1 holds a chart's text (no instruments)
-defc RN_Y     = $3E60
+; charts (chart.asm, overlaid on the dead beeper player at $9551)
+defc OV_CROSS  = $E531                  ; the chart cursor, XORed into the map (chart2.asm)
+defc OV_LIST   = $E534                  ; the numbered systems into window 1 (chart2.asm)
+defc CH_VIEW  = $3E80                   ; chart.asm: TX_VIEW, kept while the map is in segment 1
+defc LB_HI    = $3E81                   ; short-range chart: the system under the cursor ($FF none)
+defc LB_BI    = $3E82                   ; (lhi work: best so far, and its distance)
+defc LB_BS    = $3E83
+defc LB_GX    = $3E85                   ; the galaxy x, y of the system being named
+defc LB_GY    = $3E86
+defc CH_CNT   = $3E64                   ; chart renders still to do (something new drawn)
+defc CH_SAFE  = $3E65                   ; chart: render calls since the last render
+defc CX_N     = $3E66                   ; crosshairs on the chart (XORed into the map)
+defc CX_TAB   = $3E67                   ; ... x, y, arm each, up to 4
+defc LB_N     = $3E73                   ; short-range chart: systems named so far
+defc LB_ROW   = $3E74                   ; ... row and column of the last character
+defc LB_COL   = $3E75
+defc LB_DIRTY = $3E76                   ; ... the list in window 1 wants printing
+defc CR_HI    = $3E77                   ; chart.asm work: the map's high address byte
+defc CX_X     = $3E78
+defc CX_Y     = $3E79
+defc CX_H     = $3E7A
+defc CX_PM    = $3E7B
+defc CX_I     = $3E7C
+defc CX_TMP   = $3E7D                   ; (3 bytes)
+defc LB_TAB   = TX_SHAD+3*31            ; systems: row, column, name (10), galaxy x, y;
+defc LB_SZ    = 14                      ; the shadow's rows 3-18 are not used while a
+defc LB_MAX   = 32                      ; chart is up
 defc SND_N    = $3E61                   ; sound: frames left of the effect playing
-defc SND_P    = $3E62                   ; sound: its pattern (word, bit 0 = next frame)                   ; chart render: first Spectrum pixel row shown
+defc SND_P    = $3E62                   ; sound: its pattern (word, bit 0 = next frame)
 defc CM_ON    = $3E5E                   ; 1 = the disk menu (D90A) is up: its text is a text screen

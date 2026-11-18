@@ -244,9 +244,10 @@ hlp_screens:
 hlp_chart:
         defm    "N, M, S and X move the cursor, B puts it back on your system, D", $7F
         defm    "gives the distance to the nearest system and R finds a system", $7F
-        defm    "by name. The chart is in the map (the short-range chart scrolls", $7F
-        defm    "with the cursor); its title and the selected system are on the", $7F
-        defm    "left.", 0
+        defm    "by name. On the short-range chart each system has a number; the", $7F
+        defm    "names are listed on the left, the one under the cursor", $7F
+        defm    "highlighted and a * after those within jump range.", 0
+
 hlp_freeze:
         defm    "LEFT SHIFT freezes the game. Then SPACE carries on and 1 starts", $7F
         defm    "a new game. S turns the sound on and Q turns it off. B, D, R, Y", $7F

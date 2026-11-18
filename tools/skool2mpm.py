@@ -53,6 +53,9 @@ PATCH = {
     0x953D: (3, ['CALL JT_SND_BLK']),
     0x9548: (3, ['CALL JT_SND_BLK']),
     0x7344: (4, ['JP JT_SND_ERR', 'NOP']),                             # freeze menu error beep
+    0xED78: (3, ['CALL $7FC1']),                                        # a chart name's system: keep its position (chart6.asm, ldgx)
+    0x7125: (3, ['RET', 'NOP', 'NOP']),                                 # the beeper player (9551-96BE) is chart.asm now
+    0xE52E: (3, ['JP $E531']),                                          # chart crosshairs: XORed into the map (chart2.asm, E531-E6AC, then chart.asm)
     0x737B: (3, ['CALL JT_TI_7426']),                                       # title text (load commander?) -> window 1
     0x73C6: (3, ['CALL JT_TI_7430']),                                       # title text (press space) -> window 1
     0xD90A: (3, ['CALL JT_CM_ENTER']),                                 # disk menu: its text is a text screen

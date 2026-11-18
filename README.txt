@@ -20,7 +20,9 @@ Keys (the Spectrum's; LEFT SHIFT = CAPS SHIFT, RIGHT SHIFT = SYMBOL SHIFT)
   Screens     I galactic chart, O short-range chart, P data on system,
               K market prices, L status, ENTER inventory
               docked: 2 buy, 3 sell, 4 equip
-  Charts      N/M/S/X cursor, B home, D nearest system, R find by name
+  Charts      N/M/S/X cursor, B home, D nearest system, R find by name;
+              short-range chart: numbered systems, names listed on the left
+              (under the cursor highlighted, * = within jump range)
   Freeze      LEFT SHIFT, then SPACE continue, 1 new game,
               S sound on, Q sound off (B D R Y K: control options)
   Commanders  docked, RIGHT SHIFT: 1 load, 2 save (<name>.elt), 3 back

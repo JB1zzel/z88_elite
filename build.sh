@@ -15,8 +15,18 @@ test $(stat -c%s fast.bin) -le $((0xB2F0-0xB047))
 test $(stat -c%s fast2.bin) -le $((0xB435-0xB349))
 $M -b -g -m ovl.asm                                        # -> ovl.def (glue data in dead code)
 test $(stat -c%s ovl.bin) -le $((0x8445-0x8391))
+for m in chart6:0x7FC1:0x8042 chart3:0x8083:0x80D1 chart5:0x9B02:0x9B4A chart4:0x84DA:0x8523 chart:0x9551:0x96BF; do
+  IFS=: read n a e <<< "$m"                                # the charts, over dead game code
+  $M -I$D/def -b -g -m $n.asm
+  test $(stat -c%s $n.bin) -le $((e-a)) || { echo "$n.asm too big: $(stat -c%s $n.bin) (room $((e-a)))"; exit 1; }
+done
 $M -I$D/def -b -g -oglue.bin @glue.prj                 # glue modules -> glue.def (jt_*)
 G=$(stat -c%s glue.bin); test $G -le $((0x3E00-0x2000)) || { echo "glue too big: $G (variables at \$3E00)"; exit 1; }
+for m in chart2:0xE531:0xE6AD; do
+  IFS=: read n a e <<< "$m"                                # the charts, over dead game code
+  $M -I$D/def -b -g -m $n.asm
+  test $(stat -c%s $n.bin) -le $((e-a)) || { echo "$n.asm too big: $(stat -c%s $n.bin) (room $((e-a)))"; exit 1; }
+done
 python3 -I ../tools/skool2mpm.py "$S" elite_z88.asm --z88 >/dev/null
 $M -b elite_z88.asm
 $M -I$D/def -b app.asm
@@ -25,6 +35,10 @@ test $(stat -c%s app.bin) = 16384
 dd if=fast.bin of=elite_z88.bin bs=1 seek=$((0xB047-0x4000)) conv=notrunc status=none
 dd if=fast2.bin of=elite_z88.bin bs=1 seek=$((0xB349-0x4000)) conv=notrunc status=none
 dd if=ovl.bin of=elite_z88.bin bs=1 seek=$((0x8391-0x4000)) conv=notrunc status=none
+for m in chart6:0x7FC1 chart:0x9551 chart2:0xE531 chart3:0x8083 chart4:0x84DA chart5:0x9B02; do
+  IFS=: read n a <<< "$m"
+  dd if=$n.bin of=elite_z88.bin bs=1 seek=$((a-0x4000)) conv=notrunc status=none
+done
 # 128K card (KLive wants a real EPROM size): game in banks $3C-$3E, application bank $3F.
 # 128K card: the 48K game image in banks $3C-$3E, the application bank on top
 # (needs z88card 2.2: 2.1 loaded nothing from a binary larger than 16K)

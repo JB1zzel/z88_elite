@@ -5,7 +5,7 @@
 ; Assembled on its own (-> ovl.def for the glue) and overlaid by build.sh.
         module  ovl
         org     $8391
-        xdef    qtab, vn_txt, sndtab
+        xdef    qtab, vn_txt, sndtab, font
 
 ; quarter circle: qtab[i] = round(255 * sqrt(1 - (i/64)^2)), i = 0..64
 qtab:   include "qtab.inc"
@@ -33,3 +33,8 @@ sndtab: defb    16
         defw    $02B5                   ; 6 explosion
         defb    10
         defw    $02B5                   ; 7 (as 6)
+
+; 3 x 5 digits, bits 2-0
+font:   defb    7,5,5,5,7, 2,6,2,2,7, 7,1,7,4,7, 7,1,3,1,7, 5,5,7,1,1
+        defb    7,4,7,1,7, 7,4,7,5,7, 7,1,1,2,2, 7,5,7,5,7, 7,5,7,1,7
+

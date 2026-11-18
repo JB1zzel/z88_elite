@@ -14,7 +14,8 @@
 
         org $2000
         include "elite.inc"
-        include "ovl.def"               ; data kept in dead game code (ovl.asm)
+        include "ovl.def"
+        include "chart.def"             ; (chart.asm is assembled first)               ; data kept in dead game code (ovl.asm)
         xdef    jt_z_halt
         xdef    jt_cm_enter, jt_cm_load, jt_cm_save, jt_tx_band, jt_tx_erase
         xref    tx_band, tx_erase
@@ -741,23 +742,21 @@ render: ld      a,2             ; the map's scanner panel is overwritten: the ne
         jr      nz,rn_std
         ld      a,(TX_VIEW)
         cp      7
-        ld      b,24            ; galactic chart: rows 24-151 (all of it)
-        jr      z,rn_chart
+        jr      z,rn_ch
         cp      8
         jr      nz,rn_std
-        ld      a,($D052)       ; short-range chart: rows 24-166 don't fit, so 128 of
-        sub     64              ; them around the cursor (its centre row is $D052)
-        jr      nc,rn_c1
-        xor     a
-rn_c1:  and     $FE
-        cp      24
-        jr      nc,rn_c2
-        ld      a,24
-rn_c2:  cp      40
-        jr      c,rn_c3
-        ld      a,40
-rn_c3:  ld      b,a
-        jr      rn_chart
+rn_ch:  ld      hl,CH_SAFE      ; a chart (chart.asm): rendered again only after the
+        inc     (hl)            ; game drew something (CH_CNT), and every 2 s anyway
+        ld      a,(hl)
+        cp      25
+        jr      nc,rn_go
+        ld      a,(CH_CNT)
+        and     a
+        ret     z
+        dec     a
+        ld      (CH_CNT),a
+rn_go:  ld      (hl),0
+        jp      ch_render       ; (chart.asm)
 rn_std: ld      a,(V_MAPB)
         ld      b,a
         ld      c,2
@@ -795,65 +794,6 @@ rn_col: push    hl
         ld      c,2
         rst     OZ_MPB          ; game bank back into segment 2
         ret
-; rn_chart: B = first Spectrum pixel row (even); map row m = rows B+2m, B+2m+1 ORed
-rn_chart:
-        ld      a,b
-        ld      (RN_Y),a
-        ld      a,(V_MAPB)
-        ld      b,a
-        ld      c,2
-        rst     OZ_MPB
-        push    bc
-        ld      de,(V_MAPA)
-        ld      c,64            ; map pixel rows to go
-rc_row: ld      a,(RN_Y)        ; HL = Spectrum address of row y (x = 0)
-        ld      b,a
-        and     7
-        ld      h,a
-        ld      a,b
-        and     $C0
-        rrca
-        rrca
-        rrca
-        or      h
-        or      $40
-        ld      h,a
-        ld      a,b
-        and     $38
-        rlca
-        rlca
-        ld      l,a
-        ld      a,b             ; (next pair of rows)
-        add     a,2
-        ld      (RN_Y),a
-        push    de
-        ld      b,32
-rc_x:   ld      a,(hl)          ; rows y and y+1 (same cell row: H+1)
-        inc     h
-        or      (hl)
-        dec     h
-        ld      (de),a
-        inc     l
-        ld      a,e             ; next map cell: 8 bytes on
-        add     a,8
-        ld      e,a
-        djnz    rc_x
-        pop     de
-        inc     e               ; next map line; after 8, the next cell row
-        ld      a,e
-        and     7
-        jr      nz,rc_n
-        ld      a,e
-        sub     8
-        ld      e,a
-        inc     d
-rc_n:   dec     c
-        jr      nz,rc_row
-        pop     bc
-        ld      c,2
-        rst     OZ_MPB
-        ret
-
 rn_cell:
         ld      a,(hl)
         inc     h

@@ -568,10 +568,13 @@ z_circ: ld      a,($89DA)
         cp      $CB
         jr      z,zc_go
         ld      a,(TX_VIEW)             ; retargeted: on a chart, the original draws
-        cp      7                       ; the chart's circle; otherwise it is the
-        jp      z,$86EE                 ; explosion flash (8F0D), which the Spectrum
-        cp      8                       ; draws straight onto the screen - here into
-        jp      z,$86EE                 ; the view, like any other circle
+        cp      7                       ; the chart's circle (and the chart is to be
+        jr      z,zc_ch                 ; rendered again); otherwise it is the
+        cp      8                       ; explosion flash (8F0D), which the Spectrum
+        jr      nz,zc_go                ; draws straight onto the screen - here into
+zc_ch:  ld      a,13                    ; the view, like any other circle
+        ld      (CH_CNT),a
+        jp      $86EE
 zc_go:
         push    ix
         push    iy
@@ -979,8 +982,11 @@ hg_ch:  push    hl                      ; charts: the title and the lines below 
         call    tx_route
         pop     de
         pop     hl
-        jr      nz,hg_addr
-        ld      hl,(G_HL)
+        jr      z,hg_ch1
+        ld      a,13                    ; (the game draws on the chart: render it)
+        ld      (CH_CNT),a
+        jr      hg_addr
+hg_ch1: ld      hl,(G_HL)
         ret
 hg_fl:  ld      a,(TT_REC)              ; flight views: the view title (cached, not
         and     a                       ; drawn) as before; other text -> window 1

@@ -19,6 +19,7 @@
         include "director.def"
         include "elite.inc"
         include "ovl.def"               ; data kept in dead game code (ovl.asm)
+        include "chart6.def"
         xdef    tx_band, tx_erase
         xdef    msg_put, msg_update, msg_reset
         xdef    ti_7426
@@ -26,7 +27,7 @@
         xdef    tx_clsj
         xdef    tx_frame
         xdef    tx_route
-        xdef    tx_shclr
+        xdef    tx_shclr, inr
         xref    instr_update
         xref    out_byte
         xref    out_flush
@@ -47,6 +48,12 @@ tx_clsj:
         push    hl
         ld      a,1
         ld      (TX_CLR),a
+        ld      (LB_DIRTY),a            ; (a chart: no systems, no cursor yet, render)
+        ld      a,13
+        ld      (CH_CNT),a
+        xor     a
+        ld      (LB_N),a
+        ld      (CX_N),a
         call    tx_shclr
         pop     hl
         pop     de
@@ -74,11 +81,9 @@ tx_route:
         jr      nz,tr_go
         ld      a,(TX_VIEW)
         cp      7
-        jr      z,tr_cv
-        cp      8
         jr      nz,tr_go
-tr_cv:  ld      a,($D046)               ; a chart: names on it are the game's, the
-        call    ch_isrow                ; title and the lines below are text
+        ld      a,($D046)               ; the galactic chart: its title and the lines
+        call    ch_isrow                ; below are text, the rest the game's
         jp      nz,tr_game
 tr_go:  push    de
         ex      de,hl                   ; code = (glyph - $5D70) / 8 + 32
@@ -121,7 +126,7 @@ tr_rc:  ld      a,d
         cp      7
         jr      z,tr_ch
         cp      8
-        jr      z,tr_ch
+        jp      z,tr_c8
         cp      4
         jr      c,tr_msg
 tr_txt:
@@ -253,6 +258,88 @@ tr_done:
         ret
 tr_game:
         or      1                       ; NZ: the game draws it
+        ret
+
+; tr_c8: the short-range chart's names: kept in LB_TAB (numbered on the map by chart.asm,
+; listed in window 1), not drawn.  C = character, D = row, E = column.
+tr_c8:  ld      a,d                     ; short-range chart: a system's name?
+        call    ch_isrow
+        jp      z,tr_ch
+        ld      a,c
+        cp      ' '
+        jp      z,tr_done
+        ld      hl,LB_N                 ; next to the last character: the same name
+        ld      a,(hl)
+        and     a
+        jr      z,tl_new
+        ld      a,(LB_ROW)
+        cp      d
+        jr      nz,tl_new
+        ld      a,(LB_COL)
+        inc     a
+        cp      e
+        jr      nz,tl_new
+        call    tl_ent                  ; HL = the last entry's name: find its end
+        inc     hl
+        inc     hl
+        ld      b,0
+tl_end: ld      a,(hl)
+        and     a
+        jr      z,tl_e1
+        inc     hl
+        inc     b
+        jr      tl_end
+tl_e1:  ld      a,b
+        cp      9
+        jr      nc,tl_x
+        jr      tl_put
+tl_new: ld      a,(hl)
+        cp      LB_MAX
+        jr      nc,tl_x
+        inc     (hl)
+        call    tl_ent                  ; HL = the new entry
+        ld      (hl),d
+        inc     hl
+        ld      (hl),e
+        inc     hl
+        push    hl                      ; (name cleared)
+        ld      b,10
+tl_cl:  ld      (hl),0
+        inc     hl
+        djnz    tl_cl
+        ld      a,(LB_GX)               ; its galaxy position (chart6.asm, ldgx)
+        ld      (hl),a
+        inc     hl
+        ld      a,(LB_GY)
+        ld      (hl),a
+        pop     hl
+        ld      a,13                    ; its number goes on the map
+        ld      (CH_CNT),a
+tl_put: ld      a,c
+        and     $7F
+        ld      (hl),a
+        ld      a,d
+        ld      (LB_ROW),a
+        ld      a,e
+        ld      (LB_COL),a
+        ld      a,1
+        ld      (LB_DIRTY),a
+tl_x:   jp      tr_done
+tl_ent: push    bc                      ; HL = entry LB_N - 1 (row, column, name)
+        ld      a,(LB_N)
+        dec     a
+        ld      l,a                     ; * 14 (LB_SZ)
+        ld      h,0
+        add     hl,hl
+        ld      b,h
+        ld      c,l
+        add     hl,hl
+        add     hl,hl
+        add     hl,hl
+        sbc     hl,bc                   ; (no carry: small numbers)
+        ld      bc,LB_TAB
+        add     hl,bc
+        pop     bc
         ret
 
 ; tx_enter: make sure window 3 shows a text screen; clear it if the game cleared its own
@@ -392,7 +479,16 @@ tf_ch:  call    z_redraw
         call    ch_repaint
 tf_sc:  ld      a,2
         ld      (SC_ALL),a
-tf_out: jp      out_flush
+tf_out: ld      a,(CH_MODE)             ; the short-range chart's systems
+        and     a
+        jr      z,tf_fl
+        ld      a,(LB_DIRTY)
+        and     a
+        jr      z,tf_fl
+        ld      a,(TX_VIEW)
+        cp      8
+        call    z,OV_LIST
+tf_fl:  jp      out_flush
 
 ; ---------------------------------------------------------------------------------------
 ; Chart text.  ch_isrow: A = Spectrum row; Z if text on that row of the chart now up is
@@ -415,11 +511,11 @@ ci_n:   or      1
 ci_y:   xor     a
         ret
 
-; ch_wrow: A = Spectrum row of chart text -> window 1 row (title 1, the rest 3-7)
+; ch_wrow: A = Spectrum row of chart text -> window 1 row (title 0, the rest 3-7)
 ch_wrow:
         cp      3
         jr      nc,cw_1
-        ld      a,1
+        xor     a                       ; (rows 1-4: the short-range chart's systems)
         ret
 cw_1:   sub     16
         cp      3
@@ -443,7 +539,9 @@ ce_new: ld      a,1
         xor     a
         ld      (TX_CLR),a
         call    msg_reset               ; (no flight text over it)
-ch_cls: call    out_room
+ch_cls: ld      a,1                     ; (the systems' list again)
+        ld      (LB_DIRTY),a
+        call    out_room
         ld      a,1                     ; select and clear window 1
         call    out_byte
         ld      a,'2'
@@ -777,3 +875,28 @@ te_x2:  pop     hl
         xor     a
         ld      b,8
         ret
+
+; ---------------------------------------------------------------------------------------
+; (for chart2.asm: no room there)
+; inr: C if system IX is within jump range (4 * sqrt(distance) <= fuel, $DFF2), and
+; not the present system
+inr:    ld      a,($D099)
+        ld      b,a
+        ld      a,($D097)
+        ld      c,a
+        call    ldist
+        ld      a,h
+        or      l
+        ret     z
+        push    hl
+        ld      a,($D082)               ; s < (fuel / 4 + 1)^2
+        srl     a
+        srl     a
+        inc     a
+        call    lsq
+        pop     de
+        ex      de,hl
+        or      a
+        sbc     hl,de
+        ret
+
