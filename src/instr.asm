@@ -318,19 +318,7 @@ iu_next:
         call    out_flush
 ; condition (columns 23-25, row 3, reverse): R with two energy banks (nearly) empty or a
 ; hostile ship about, A other ships about, G none
-        ld      hl,$70F6                ; energy banks 1-4 (bars 8-11)
-        ld      bc,$0400
-ic_e:   ld      a,(hl)
-        cp      16
-        jr      nc,ic_f
-        inc     c
-ic_f:   inc     hl
-        inc     hl
-        djnz    ic_e
-        ld      a,c
-        cp      2
-        ld      a,'R'
-        call    c,SND_COND
+        call    OV_COND                 ; (chart2.asm)
         ld      hl,IN_COND
         cp      (hl)
         ret     z
@@ -338,7 +326,7 @@ ic_f:   inc     hl
         ld      (ic_c),a
         ld      hl,ic_s
         jp      puts
-ic_s:   defb    1,'3','@',32+23,32+3,1,'2','+','R',' '
+ic_s:   defb    1,'2','H','1',1,'3','@',32+23,32+3,1,'2','+','R',' '
 ic_c:   defb    'G',' ',1,'2','-','R',0
 
 ; missiles: 4 cells at column 3, row 6.  The last ready missile shows the arm state

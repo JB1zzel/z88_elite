@@ -50,8 +50,11 @@ tx_clsj:
         ld      a,1
         ld      (TX_CLR),a
         ld      (LB_DIRTY),a            ; (a chart: no systems, no cursor yet, render)
-        ld      a,13
+        ld      a,25
         ld      (CH_CNT),a
+        ld      h,a                     ; render at once: as if no view drawn for 0.5 s
+        ld      l,a                     ; (V_RAGE, V_VAGE), not showing the old view
+        ld      (V_RAGE),hl
         xor     a
         ld      (LB_N),a
         ld      (CX_N),a

@@ -115,6 +115,7 @@ defc MPB      = $2000                   ; glue: bind (RST 30H, or OZ Os_Mpb befo
 defc MFFULL   = $2004                   ; glue: the map buffer (VBUF) to a 240-pixel map
 defc OV_CROSS  = $E531                  ; the chart cursor, XORed into the map (chart2.asm)
 defc OV_LIST   = $E534                  ; the numbered systems into window 1 (chart2.asm)
+defc OV_COND   = $E537                  ; the condition letter (chart2.asm)
 defc CH_VIEW  = $3E80                   ; chart.asm: TX_VIEW, kept while the map is in segment 1
 defc LB_HI    = $3E81                   ; short-range chart: the system under the cursor ($FF none)
 defc LB_BI    = $3E82                   ; (lhi work: best so far, and its distance)

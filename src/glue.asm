@@ -791,7 +791,10 @@ rn_go:  ld      (hl),0
         pop     bc
         ld      c,2
         jp      MPB
-rn_std: ld      a,(V_MAPB)
+rn_std: ld      a,(TI_MODE)     ; flight (the instruments up): the Spectrum screen is
+        and     a               ; blank, never shown (the map would clear when the game
+        ret     z               ; pauses its view frames, as around a kill)
+        ld      a,(V_MAPB)
         ld      b,a
         ld      c,2
         call    MPB
@@ -860,7 +863,8 @@ z_redraw:
         push    bc
         push    de
         push    hl
-        ld      hl,win
+        call    zr_mclr         ; the old map cleared while still hidden (a text screen
+        ld      hl,win          ; over it), not shown again before it is cleared
         call    puts
         ld      a,(MPB)         ; OZ before 4.1 (MPB made OS_Mpb at boot): 240 at once,
         cp      $E7             ; no 256 try (MP_MEM there is an Internal error)
@@ -906,21 +910,8 @@ zr_set: ld      (MW240),a
         ld      (V_MAPB),a
         ld      hl,$8000
         ld      (V_MAPA),hl
-zr_clr: ld      a,(R_MAPB)      ; clear the map (on a first start its memory holds
-        ld      b,a             ; whatever was there before)
-        ld      c,2
-        call    MPB
-        push    bc
-        ld      hl,(R_MAPA)
-        ld      d,h
-        ld      e,l
-        inc     de
-        ld      bc,240*64/8-1
-        ld      (hl),0
-        ldir
-        pop     bc
-        ld      c,2
-        call    MPB
+zr_clr: call    zr_mclr         ; clear the map (on a first start its memory holds
+                                ; whatever was there before)
         ld      a,2             ; (the whole scanner panel again)
         ld      (SC_ALL),a
         ld      a,(TI_MODE)     ; the instruments, unless window 1 holds other text
@@ -934,6 +925,27 @@ zr_x:   pop     hl
         pop     bc
         pop     af
         ret
+
+; zr_mclr: clear the map, once known (R_MAPA)
+zr_mclr:
+        ld      a,(R_MAPA+1)
+        and     a
+        ret     z
+        ld      a,(R_MAPB)
+        ld      b,a
+        ld      c,2
+        call    MPB
+        push    bc
+        ld      hl,(R_MAPA)
+        ld      d,h
+        ld      e,l
+        inc     de
+        ld      bc,240*64/8-1
+        ld      (hl),0
+        ldir
+        pop     bc
+        ld      c,2
+        jp      MPB
 
 ; zr_def: HL = width: define the map (MP_GRA, the reason in BC for OZ before 5) and
 ; write one line through OZ (before OZ 5 the window shows the map only once written to;

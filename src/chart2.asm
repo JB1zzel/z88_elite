@@ -9,10 +9,12 @@
         include "ovl3.def"
         include "chart6.def"
         include "ovl4.def"
+        include "snd.def"
         org     $E531
 
         jp      ch_cross                ; E52E (the game's crosshair) jumps here
         jp      ch_list                 ; OV_LIST
+        jp      ch_cond                 ; OV_COND
 
 ; ch_cross: replaces the game's crosshair (E52E) on the charts: XOR it into the map.  A
 ; crosshair drawn again at the same place is the game erasing it.
@@ -199,3 +201,21 @@ cl_rev: push    af                      ; reverse on ('+') or off ('-')
         ld      a,'R'
         jp      out_byte
 
+
+; ch_cond (kept here for room; instr.asm, in flight): the condition letter -> A: 'R' with
+; two energy banks (nearly) empty, else from the ship slots (snd_cond)
+ch_cond:
+        ld      hl,$70F6                ; energy banks 1-4 (bars 8-11)
+        ld      bc,$0400
+cn_e:   ld      a,(hl)
+        cp      16
+        jr      nc,cn_f
+        inc     c
+cn_f:   inc     hl
+        inc     hl
+        djnz    cn_e
+        ld      a,c
+        cp      2
+        ld      a,'R'
+        ret     nc
+        jp      SND_COND
