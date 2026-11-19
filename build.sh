@@ -17,15 +17,12 @@ $M -b -g -m ovl.asm                                        # -> ovl.def (glue da
 test $(stat -c%s ovl.bin) -le $((0x8445-0x8391))
 $M -I$D/def -b -g -m ovl3.asm                              # small glue routines (9852-988D)
 test $(stat -c%s ovl3.bin) -le $((0x988E-0x9852)) || { echo "ovl3.asm too big: $(stat -c%s ovl3.bin)"; exit 1; }
-for m in chart6:0x7FC1:0x8042 chart3:0x8083:0x80D1 chart5:0x9B02:0x9B4A chart4:0x84DA:0x8523 chart:0x9551:0x96BF; do
+for m in chart6:0x7FC1:0x8042 chart3:0x8083:0x80D1 chart5:0x9B02:0x9B4A chart4:0x85B0:0x8619 chart:0x8446:0x85B0; do
   IFS=: read n a e <<< "$m"                                # the charts, over dead game code
   $M -I$D/def -b -g -m $n.asm
   test $(stat -c%s $n.bin) -le $((e-a)) || { echo "$n.asm too big: $(stat -c%s $n.bin) (room $((e-a)))"; exit 1; }
 done
-python3 -I ../tools/mksndp.py elite_ref.asm sndp.asm >/dev/null   # the game's sound code, for the sound bank
-$M -I$D/def -b -g -m sndp.asm                              # -> sndp.def (entries, for the glue)
-test $(stat -c%s sndp.bin) -le 16384
-$M -I$D/def -b -g -m snd.asm                               # the condition box's ship scan (978B-982D)
+$M -I$D/def -b -g -m snd.asm                               # speaker helpers, beeper, condition scan (978B-982D)
 test $(stat -c%s snd.bin) -le $((0x982E-0x978B)) || { echo "snd.asm too big"; exit 1; }
 $M -I$D/def -b -g -m ovl4.asm                              # (7D12-7D54)
 test $(stat -c%s ovl4.bin) -le $((0x7D55-0x7D12)) || { echo "ovl4.asm too big: $(stat -c%s ovl4.bin)"; exit 1; }
@@ -45,7 +42,7 @@ dd if=fast.bin of=elite_z88.bin bs=1 seek=$((0xB047-0x4000)) conv=notrunc status
 dd if=fast2.bin of=elite_z88.bin bs=1 seek=$((0xB349-0x4000)) conv=notrunc status=none
 dd if=ovl.bin of=elite_z88.bin bs=1 seek=$((0x8391-0x4000)) conv=notrunc status=none
 python3 -I ../tools/mksqfont.py elite_z88.bin sq5.inc 0xCA00    # the squeezed font, ready made
-for m in snd:0x978B ovl3:0x9852 ovl4:0x7D12 chart6:0x7FC1 chart:0x9551 chart2:0xE531 chart3:0x8083 chart4:0x84DA chart5:0x9B02; do
+for m in snd:0x978B ovl3:0x9852 ovl4:0x7D12 chart6:0x7FC1 chart:0x8446 chart2:0xE531 chart3:0x8083 chart4:0x85B0 chart5:0x9B02; do
   IFS=: read n a <<< "$m"
   dd if=$n.bin of=elite_z88.bin bs=1 seek=$((a-0x4000)) conv=notrunc status=none
 done

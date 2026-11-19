@@ -18,12 +18,11 @@
         include "ovl.def"
         include "chart.def"             ; (chart.asm, snd.asm are assembled first)
         include "snd.def"
-        include "sndp.def"
         include "screen.def"
         xdef    jt_z_halt
         xdef    jt_cm_enter, jt_cm_load, jt_cm_save, jt_tx_band, jt_tx_erase
         xref    tx_band, tx_erase
-        xdef    jt_snd_b0, jt_snd_b1, jt_snd_b2, jt_snd_b3, jt_snd_frame, jt_spk_on, jt_spk_off
+        xdef    jt_spk_off
         xref    cm_enter, cm_load, cm_save
         xdef    jt_st_bit7hl
         xdef    jt_st_ldafc0d
@@ -118,8 +117,7 @@ jt_pa22b0:
 jt_pa22b1:
         jp      pa22b1          ; $201E
 jt_zxin:jp      zxin            ; $2021  Spectrum keyboard port read
-jt_beep:call    snd_go          ; ... and the ROM BEEPER calls (9BCC, E1F4)
-        defw    BEEPER
+jt_beep:jp      beeper          ; $2024  ROM BEEPER (9BCC, E1F4): snd.asm
 jt_z_start:
         jp      z_start         ; boot code jumps here
 jt_z_errhan:
@@ -172,21 +170,6 @@ jt_ti_7426:
         jp      ti_7426         ; title loop: CALL $7426 at 737B
 jt_ti_7430:
         jp      ti_7430         ; title loop: CALL $7430 at 73C6
-jt_snd_b0:                      ; the game's sound code, run from the sound bank (sndp):
-        call    snd_go          ; the blocking effects at 9527, 9532, 953D, 9548 ...
-        defw    L_9527
-jt_snd_b1:
-        call    snd_go
-        defw    L_9532
-jt_snd_b2:
-        call    snd_go
-        defw    L_953D
-jt_snd_b3:
-        call    snd_go
-        defw    L_9548
-jt_snd_frame:                   ; ... the per-frame player (7125, from FF3B) ...
-        call    snd_go
-        defw    L_9579
 jt_cm_enter:
         jp      cm_enter        ; disk menu: CALL $D61D at D90A
 jt_cm_load:
@@ -643,7 +626,11 @@ zh_n:   ld      b,a
 zh_int: push    bc
         call    G_KEYSCAN
         call    G_RATES
-        call    jt_snd_frame    ; the game's sound player (FF3B's call, 50 times a second)
+        push    de              ; the game's sound player, 50 times a second (the
+        push    hl              ; Spectrum's frame interrupt, FF3B: CALL 7125 = JP 9579)
+        call    $7125
+        pop     hl
+        pop     de
         pop     bc
         djnz    zh_int
         ld      a,(V_WAIT)
@@ -953,48 +940,12 @@ zr_mclr:
 
 
 
-; snd_go: run an entry of the game's sound code (sndp, in the sound bank: segment 3).
-; Called as  CALL snd_go / DEFW entry  from the jump table; the entry gets the caller's
-; DE, HL, IX, IY (the beeper's DE/HL), returns to the game's caller.  The game's sound
-; on/off byte ($FC0E, in game bank 3) and OZ's COM (speaker bits clear) are copied to
-; application RAM first; afterwards segment 3 and the real COM are put back.
-snd_go: ex      (sp),hl         ; HL -> the entry's address
-        ld      a,(hl)
-        ld      (sg_jp+1),a
-        inc     hl
-        ld      a,(hl)
-        ld      (sg_jp+2),a
-        pop     hl              ; (the caller's HL; its return address is on top)
-        ld      a,($FC0E)
-        ld      (SND_ON),a
-        ld      a,(BLSC_COM)
-        and     $3F
-        ld      (SPKC),a
-        ld      a,(V_SBANK)
-        ld      b,a
-        ld      c,3
-        oz      Os_Mpb          ; the sound bank into segment 3
-        ld      a,b
-        ld      (SND_OLD),a
-        call    sg_jp
-        push    af
-        ld      a,(SND_OLD)
-        ld      b,a
-        ld      c,3
-        oz      Os_Mpb          ; game bank 3 back
-        pop     af
-jt_spk_off:                     ; the speaker off: COM as OZ has it (also 7344's beep)
+
+jt_spk_off:                     ; the speaker off: COM as OZ has it
         push    af
         ld      a,(BLSC_COM)
         out     ($B0),a
         pop     af
-        ret
-sg_jp:  jp      0
-jt_spk_on:                      ; the speaker on (7344's freeze-menu beep, in place)
-        ld      a,(BLSC_COM)
-        and     $3F
-        or      $40
-        out     ($B0),a
         ret
 
 puts:   ld      a,(hl)

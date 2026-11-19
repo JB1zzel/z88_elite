@@ -7,22 +7,22 @@ map, instruments and all text in OZ windows, keyboard read
 directly in flight, and the game's own sound on the Z88 speaker.
 
 Card: elite.epr, 128K (works in OZvm and KLive). Needs an expanded Z88 with
-64K of free RAM (four free 16K banks), OZ 3.0 or later (tested on OZ 3.0,
+48K of free RAM (three free 16K banks), OZ 3.0 or later (tested on OZ 3.0,
 4.7 and 5). The application is "Elite" in the Index (#E). On a non-expanded
 Z88 it says so and returns to the Index.
 RAM application (no card needed): copy elite.app with elite.ap0-elite.ap3 into one
 directory on the Z88 (OZ 4.6 or later, or the Installer popdown), mark elite.app in
 the Filer and press INDEX; on OZ 5 elite-oz5.app alone does the same (compressed).
 Installed, Elite takes 64K of RAM for itself and still copies the game into three
-more banks to run, plus one for the sound (128K in all; the card version needs
-only the 64K).  It finds its
+more banks to run (112K in all; the card version needs only the 48K).  It finds its
 game banks wherever the install put them.
 Sound: the Spectrum's own sound code (the launch, laser, hits, explosions, the
-missile-lock and freeze-menu beeps), unchanged except that it drives the Z88's
-speaker bit instead of the Spectrum beeper.  It runs from a fourth RAM bank,
-switched into segment 3 for each sound (src/sndp.asm, generated from the game by
-tools/mksndp.py).  Pitch is about 6% lower than the Spectrum's (3.28 MHz against
-3.5 MHz) apart from the two ROM beeps, which are timed to match.
+missile-lock and freeze-menu beeps), running where the Spectrum has it; each OUT to
+the beeper is patched into a call that sets the Z88's speaker bit (src/snd.asm).
+The chart code that used to sit there moved into the Spectrum's dashboard-drawing
+code, which the Z88 doesn't use.  Pitch is a little lower than the Spectrum's
+(3.28 MHz against 3.5 MHz, plus the calls) apart from the two ROM beeps, which are
+timed to match.
 The expanded check and the map routine (opengraphics, in src/glue.asm) are
 Gunther Strube's, from Cosmic Payback, kept as he wrote them.
 

@@ -64,12 +64,6 @@ expanded:
 ; one bank, so the pool owns it whole; in which order the pages come does not matter.
         ld      de,V_BANKS
         ld      a,3
-        call    bk_alloc
-        ld      de,V_SBANK      ; a fourth: the sound bank (the game's sound code, sndp)
-        ld      a,1
-        call    bk_alloc
-        jr      bk_done
-bk_alloc:                       ; A banks, their numbers to DE ...
 bk_lp:  push    af
         push    de
         ld      a,MM_S1
@@ -105,8 +99,6 @@ bk_nx:  dec     c
         pop     af
         dec     a
         jr      nz,bk_lp
-        ret
-bk_done:
 
 ; --- find the game's three banks -----------------------------------------------------------
 ; On a card they are the three below this one.  Installed as a RAM application they can be
@@ -164,15 +156,6 @@ cp_lp:  push    de
         inc     hl
         dec     d
         jr      nz,cp_lp
-
-        ld      a,(V_SBANK)     ; the game's sound code into the sound bank (it runs there
-        ld      b,a             ; at $C000, in segment 3: sndp.asm)
-        ld      c,1
-        oz      Os_Mpb
-        ld      hl,sndp_bin
-        ld      de,$4000
-        ld      bc,sndp_end-sndp_bin
-        ldir
 
         ld      hl,V_BANKS      ; the working copies' signatures wiped
         ld      iy,sig_tab
@@ -256,7 +239,7 @@ msg_game:
         defm    "Elite: the game's banks were not found (card or RAM install).",0
 msg_mem:
         defb    1,'7','#','1',32,32,32+90,32+8,128,1,'2','C','1'
-        defm    "Elite needs an expanded Z88: not enough free RAM (64K).",0
+        defm    "Elite needs an expanded Z88: not enough free RAM (48K).",0
 msg_unexp:
         defb    1,'7','#','1',32,32,32+90,32+8,128,1,'2','C','1'
         defm    "Sorry, Elite cannot run on a non-expanded Z88.",0
@@ -267,9 +250,6 @@ applname:
 glue_bin:
         binary  "glue.bin"
 glue_end:
-sndp_bin:
-        binary  "sndp.bin"
-sndp_end:
 
 defc BANK_APPL = $3F
 
@@ -401,7 +381,7 @@ hlp_port:
         defm    "instruments natively, puts all text in OZ windows, reads the", $7F
         defm    "keyboard directly in flight, and plays the game's own sound", $7F
         defm    "on the Z88's speaker. The Lenslok check is gone. Needs an", $7F
-        defm    "expanded Z88 with 64K of free RAM, and OZ 3.0 or later.", 0
+        defm    "expanded Z88 with 48K of free RAM, and OZ 3.0 or later.", 0
 end_of_code:
         defs    $3FC0-end_of_code
         doraplf [in_dor & $3FFF, BANK_APPL]
