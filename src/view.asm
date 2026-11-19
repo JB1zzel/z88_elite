@@ -901,8 +901,37 @@ sp_lp:  ld      a,(hl)
 
 
 ; ---------------------------------------------------------------------------------------
+cap_ms: defb    10, 8, 0, 16, 12        ; V_CAP 0-4: 20, 25/s, off, 12.5, 16.7/s
+
 ; view_copy: the view (8 rows x 168 bytes) into the left of the map (map bound in seg. 2)
 view_copy:
+        push    bc                      ; the frame cap: a new frame starts no sooner than
+        push    de                      ; cap_ms (5 ms steps of the Blink's TIM0, real time)
+        push    hl                      ; after the last one, so a fast emulator does not
+        ld      a,(V_CAP)               ; speed the game up
+        ld      e,a
+        ld      d,0
+        ld      hl,cap_ms
+        add     hl,de
+        ld      c,(hl)                  ; C = 5 ms steps per frame (0: no cap)
+        ld      a,c
+        and     a
+        jr      z,vc_d
+        ld      a,(V_VAGE)              ; (0.2 s or more since the last frame: no wait,
+        cp      10                      ; and TIM0's 1 s wrap cannot mislead)
+        jr      nc,vc_d
+        ld      hl,V_FT
+vc_w:   in      a,($D0)                 ; TIM0: 0-199
+        sub     (hl)
+        jr      nc,vc_p
+        add     a,200
+vc_p:   cp      c
+        jr      c,vc_w
+vc_d:   in      a,($D0)
+        ld      (V_FT),a
+        pop     hl
+        pop     de
+        pop     bc
         ld      a,(V_VAGE)              ; first view frame after a text screen: the whole
         cp      25                      ; scanner panel again
         jr      c,vc_nv

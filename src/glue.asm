@@ -378,7 +378,21 @@ zb_sc:  push    af
         pop     af
         rlca
         jr      c,zb_sc
-        ld      hl,V_KEYS           ; nothing down at all (the usual case): quick
+        ld      a,(V_KEYS+3)        ; = (row A11, bit 7; no Spectrum key): a new press
+        and     $80                 ; moves the frame cap on
+        ld      hl,V_CAPK
+        cp      (hl)
+        ld      (hl),a
+        jr      z,zb_nc
+        and     a
+        jr      z,zb_nc
+        ld      a,(V_CAP)           ; next setting: 20, 25/s, off, 12.5, 16.7/s, 20 ...
+        inc     a
+        cp      5
+        jr      c,zb_c2
+        xor     a
+zb_c2:  ld      (V_CAP),a
+zb_nc:  ld      hl,V_KEYS           ; nothing down at all (the usual case): quick
         ld      b,8
         xor     a
 zb_any: or      (hl)
@@ -737,9 +751,7 @@ tk_v:   ld      (V_VAGE),a
 ; --- show the Spectrum screen's top two thirds (256 x 128) in the 256 x 64 map ---------
 ; Each map row ORs two Spectrum pixel rows.  The map is bound into segment 2 for the copy
 ; (the Spectrum screen at $4000 is in segment 1); interrupts are off.
-render: ld      a,2             ; the map's scanner panel is overwritten: the next view
-        ld      (SC_ALL),a      ; copy puts all of it back
-        ld      a,(TI_ON)       ; a chart: its own window onto the screen
+render: ld      a,(TI_ON)       ; a chart: its own window onto the screen
         ld      hl,CM_ON
         or      (hl)
         jr      nz,rn_std
@@ -759,6 +771,8 @@ rn_ch:  ld      hl,CH_SAFE      ; a chart (chart.asm): rendered again only after
         dec     a
         ld      (CH_CNT),a
 rn_go:  ld      (hl),0
+        ld      a,2             ; the map's scanner panel is overwritten: the next view
+        ld      (SC_ALL),a      ; copy puts all of it back
         ld      hl,(V_MAPA)     ; the chart drawn in VBUF, then copied whole, so the
         push    hl              ; numbers are never seen erased between the renders
         ld      a,(V_MAPB)      ; while the game draws the chart
@@ -784,71 +798,10 @@ rn_go:  ld      (hl),0
         ld      c,2
         oz      Os_Mpb
         ret
-rn_std: ld      a,(TI_MODE)     ; flight (the instruments up): the Spectrum screen is
-        and     a               ; blank, never shown (the map would clear when the game
-        ret     z               ; pauses its view frames, as around a kill)
-        ld      a,(V_MAPB)
-        ld      b,a
-        ld      c,2
-        oz      Os_Mpb
-        push    bc
-        ld      de,(V_MAPA)
-        ld      c,0             ; C = map character row 0-7 (Spectrum char rows 2C, 2C+1)
-rn_row: ld      a,c             ; Spectrum char row 2C: third = C/4, row in third = (2C)&7
-        and     4
-        add     a,a             ; (C/4)*8 -> H offset $00 or $08
-        add     a,$40
-        ld      h,a
-        ld      a,c
-        and     3
-        rrca
-        rrca                    ; (2C & 7)*32 = (C&3)*64
-        ld      l,a
-        ld      b,32
-rn_col: push    hl
-        call    rn_cell         ; 4 bytes from char row 2C
-        pop     hl
-        push    hl
-        ld      a,l
-        add     a,$20           ; char row 2C+1 (same third)
-        ld      l,a
-        call    rn_cell
-        pop     hl
-        inc     l
-        djnz    rn_col
-        inc     c
-        ld      a,c
-        cp      8
-        jr      c,rn_row
-        pop     bc
-        ld      c,2
-        oz      Os_Mpb           ; game bank back into segment 2
-        ret
-rn_cell:
-        ld      a,(hl)
-        inc     h
-        or      (hl)
-        inc     h
-        ld      (de),a
-        inc     de
-        ld      a,(hl)
-        inc     h
-        or      (hl)
-        inc     h
-        ld      (de),a
-        inc     de
-        ld      a,(hl)
-        inc     h
-        or      (hl)
-        inc     h
-        ld      (de),a
-        inc     de
-        ld      a,(hl)
-        inc     h
-        or      (hl)
-        ld      (de),a
-        inc     de
-        ret
+rn_std: ret                     ; anything else: the Spectrum screen is blank (titles and
+                                ; text go to OZ windows; the view, scanner and flashes are
+                                ; drawn natively), so it is never copied to the map: doing
+                                ; so only blanked the map (the title, around a kill)
 
 ; --- windows and map ---------------------------------------------------------------------
 z_redraw:

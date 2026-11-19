@@ -19,6 +19,11 @@ Keys (the Spectrum's; LEFT SHIFT = CAPS SHIFT, RIGHT SHIFT = SYMBOL SHIFT)
   Weapons     A or 0 laser, T target missile, F fire it, U unarm,
               E ECM, W energy bomb, Q escape pod, C docking computer
               TAB forces an encounter (added for this version)
+  Speed cap   = cycles the frame cap: 20 (default), 25, off, 12.5, 16.7
+              frames a second; shown in flight under the messages.  On a
+              fast emulator (OZvm at x5) it keeps combat at an even speed
+              while each frame is drawn cleanly; a real Z88 is seldom faster
+              than the cap - added for this version
   Condition   in flight, the box under the compass: G nothing about,
               A other ships about, R danger (hostile ship, or 2 energy
               banks empty) - added for this version
