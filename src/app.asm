@@ -146,7 +146,7 @@ wait:   oz      Os_In
 
 msg_mem:
         defb    1,'7','#','1',32,32,32+90,32+8,128,1,'2','C','1'
-        defm    "Elite needs 48K of free RAM: not enough is free.",0
+        defm    "Elite needs an expanded Z88: not enough free RAM (48K).",0
 msg_unexp:
         defb    1,'7','#','1',32,32,32+90,32+8,128,1,'2','C','1'
         defm    "Sorry, Elite cannot run on a non-expanded Z88.",0
@@ -203,12 +203,11 @@ in_commands:
         defb    1
         defb    0
 
-in_help:                                ; a help page holds 7 lines of 63 characters
-        defm    "ELITE", $7F
-        defm    $7F
+in_help:                                ; a page holds 6 lines (below OZ's title row); kept to
+                                        ; 60 characters a line
         defm    "The ZX Spectrum Elite for the expanded Z88: the original Z80", $7F
-        defm    "game code runs here, with its graphics and text redrawn for the", $7F
-        defm    "Z88 screen.", $7F
+        defm    "game code runs here, with its graphics and text redrawn for", $7F
+        defm    "the Z88 screen.", $7F
         defm    $7F
         defm    "The MENU topics have the keys.", 0
 
@@ -221,71 +220,72 @@ hlp_cred:
         defm    "Who wrote what.", 0
 
 hlp_game:
-        defm    "You start docked at Lave with a Cobra Mk III, 100 credits and a", $7F
-        defm    "pulse laser. Trade between systems, fight pirates and police,", $7F
-        defm    "buy better equipment, and work your way up from Harmless to", $7F
-        defm    "Elite across eight galaxies.", $7F
-        defm    "In flight the box under the compass shows the condition: G", $7F
-        defm    "nothing about, A other ships about, R danger (a hostile ship,", $7F
-        defm    "or two energy banks empty).", 0
+        defm    "You start docked at Lave with a Cobra Mk III, 100 credits", $7F
+        defm    "and a pulse laser. Trade, fight pirates and police, buy", $7F
+        defm    "equipment, and rise from Harmless to Elite in 8 galaxies. In", $7F
+        defm    "flight the box under the compass shows the condition: G", $7F
+        defm    "nothing about, A other ships about, R danger (a hostile", $7F
+        defm    "ship, or two energy banks empty).", 0
 hlp_scr:
         defm    "The map on the right holds the 3D view and the scanner, or a", $7F
         defm    "chart. On the left are the instruments (fuel, shields,", $7F
         defm    "temperatures, speed, roll and dive, energy banks, missiles,", $7F
-        defm    "compass), the view's name and the flight messages. Text screens", $7F
-        defm    "such as Status and Market Prices fill the whole width.", 0
+        defm    "compass), the view's name and the flight messages. Text", $7F
+        defm    "screens such as Status and Market Prices fill the whole", $7F
+        defm    "width.", 0
 hlp_leave:
         defm    "INDEX suspends the game and it carries on where you left it.", $7F
         defm    "ESC does not quit; to end the game, KILL it from the Index.", 0
 
 hlp_fly:
-        defm    "S and X climb and dive, N and M roll. SPACE speeds up and RIGHT", $7F
-        defm    "SHIFT slows down. 1, 2, 3 and 4 show the front, rear, left and", $7F
-        defm    "right views. Docked, 1 launches.", 0
+        defm    "S and X climb and dive, N and M roll. SPACE speeds up and", $7F
+        defm    "RIGHT SHIFT slows down. 1, 2, 3 and 4 show the front, rear,", $7F
+        defm    "left and right views. Docked, 1 launches.", 0
 hlp_weap:
-        defm    "A (or 0) fires the laser. T targets a missile, F fires it and U", $7F
-        defm    "unarms it. E sets off the ECM, W the energy bomb, Q launches", $7F
-        defm    "the escape pod and C switches on the docking computer: each", $7F
-        defm    "only once fitted.", $7F
-        defm    $7F
-        defm    "TAB brings an enemy in at once (added for this version, for", $7F
-        defm    "practice).", 0
+        defm    "A (or 0) fires the laser. T targets a missile, F fires it", $7F
+        defm    "and U unarms it. E sets off the ECM, W the energy bomb, Q", $7F
+        defm    "launches the escape pod and C switches on the docking", $7F
+        defm    "computer: each only once fitted. TAB brings an enemy in at", $7F
+        defm    "once (added for this version, for practice).", 0
 hlp_jump:
-        defm    "Pick a system on a chart, then press H in flight: the countdown", $7F
-        defm    "starts and the jump follows if you have the fuel. With a", $7F
-        defm    "galactic hyperdrive fitted, G and H together take you to the", $7F
-        defm    "next galaxy.", 0
+        defm    "Pick a system on a chart, then press H in flight: the", $7F
+        defm    "countdown starts and the jump follows if you have the fuel.", $7F
+        defm    "With a galactic hyperdrive fitted, G and H together take you", $7F
+        defm    "to the next galaxy.", 0
 hlp_screens:
-        defm    "I galactic chart, O short-range chart, P data on the system, K", $7F
-        defm    "market prices, L status, ENTER inventory. Docked: 2 buys cargo,", $7F
-        defm    "3 sells cargo, 4 equips the ship.", 0
+        defm    "I galactic chart, O short-range chart, P data on the system,", $7F
+        defm    "K market prices, L status, ENTER inventory. Docked: 2 buys", $7F
+        defm    "cargo, 3 sells cargo, 4 equips the ship.", 0
 hlp_chart:
-        defm    "N, M, S and X move the cursor, B puts it back on your system, D", $7F
-        defm    "gives the distance to the nearest system and R finds a system", $7F
-        defm    "by name. On the short-range chart each system has a number; the", $7F
-        defm    "names are listed on the left, the one under the cursor", $7F
-        defm    "highlighted and a * after those within jump range.", 0
+        defm    "N, M, S and X move the cursor, B puts it back on your", $7F
+        defm    "system, D gives the distance to the nearest system and R", $7F
+        defm    "finds a system by name. On the short-range chart each system", $7F
+        defm    "has a number; the names are listed on the left, the one", $7F
+        defm    "under the cursor highlighted and a * after those within jump", $7F
+        defm    "range.", 0
 
 hlp_freeze:
-        defm    "LEFT SHIFT freezes the game. Then SPACE carries on and 1 starts", $7F
-        defm    "a new game. S turns the sound on and Q turns it off. B, D, R, Y", $7F
-        defm    "and K set the Spectrum's joystick and keyboard options.", 0
+        defm    "LEFT SHIFT freezes the game. Then SPACE carries on and 1", $7F
+        defm    "starts a new game. S turns the sound on and Q turns it off.", $7F
+        defm    "B, D, R, Y and K set the Spectrum's joystick and keyboard", $7F
+        defm    "options.", 0
 hlp_save:
-        defm    "Docked, RIGHT SHIFT opens the commander menu: 1 loads, 2 saves,", $7F
-        defm    "3 goes back. A commander is saved as a file named after him,", $7F
-        defm    "with .elt added (JAMESON.elt for the default name).", 0
+        defm    "Docked, RIGHT SHIFT opens the commander menu: 1 loads, 2", $7F
+        defm    "saves, 3 goes back. A commander is saved as a file named", $7F
+        defm    "after him, with .elt added (JAMESON.elt for the default", $7F
+        defm    "name).", 0
 
 hlp_elite:
         defm    "Elite by Ian Bell and David Braben (1984). The ZX Spectrum", $7F
-        defm    "version by Torus, published by Firebird in 1985. This card runs", $7F
-        defm    "that version's Z80 code, taken from the elite-skoolkit", $7F
+        defm    "version by Torus, published by Firebird in 1985. This card", $7F
+        defm    "runs that version's Z80 code, taken from the elite-skoolkit", $7F
         defm    "disassembly.", 0
 hlp_port:
         defm    "The Z88 front end draws the 3D view, scanner, charts and", $7F
         defm    "instruments natively, puts all text in OZ windows, reads the", $7F
-        defm    "keyboard directly in flight, and plays the effects on the Z88's", $7F
-        defm    "speaker. The Lenslok check is gone. Needs an expanded Z88 with", $7F
-        defm    "48K of free RAM, and OZ 3.0 or later.", 0
+        defm    "keyboard directly in flight, and plays the effects on the", $7F
+        defm    "Z88's speaker. The Lenslok check is gone. Needs an expanded", $7F
+        defm    "Z88 with 48K of free RAM, and OZ 3.0 or later.", 0
 end_of_code:
         defs    $3FC0-end_of_code
         doraplf [in_dor & $3FFF, BANK_APPL]
