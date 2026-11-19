@@ -332,11 +332,11 @@ hlp_leave:
 
 hlp_fly:
         defm    "S and X climb and dive, N and M roll. SPACE speeds up and", $7F
-        defm    "RIGHT SHIFT slows down. 1, 2, 3 and 4 show the front, rear,", $7F
-        defm    "left and right views. Docked, 1 launches.", $7F
-        defm    "- caps the frame rate: 20 (the default), 25, off, 12.5 or", $7F
-        defm    "16.7 a second. On a fast emulator a cap keeps combat at", $7F
-        defm    "an even speed; a real Z88 is seldom faster than the cap.", 0
+        defm    "RIGHT SHIFT slows down. 1-4 show the front, rear, left and", $7F
+        defm    "right views. Docked, 1 launches. - caps the frame rate: 20", $7F
+        defm    "(default), 25, off, 12.5 or 16.7 a second, for fast", $7F
+        defm    "emulators. = turns strict docking on (come in close to the", $7F
+        defm    "slot's centre line, as on the BBC Micro) or off.", 0
 hlp_weap:
         defm    "A (or 0) fires the laser. T targets a missile, F fires it", $7F
         defm    "and U unarms it. E sets off the ECM, W the energy bomb, Q", $7F

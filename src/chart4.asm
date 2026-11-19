@@ -3,7 +3,7 @@
         module  chart4
         include "elite.inc"
         include "chart5.def"
-        org     $85B0
+        org     $85A2
         xdef    dnum
 
 ; dnum: number C at map row (CX_I), byte column (CX_PM) * 8, 5 rows (map in segment 1)

@@ -89,7 +89,7 @@ in_reset:
         call    msg_reset               ; (and the flight text)
         ld      hl,IN_SHAD
         ld      de,IN_SHAD+1
-        ld      bc,$66-1
+        ld      bc,$67-1
         ld      (hl),$FF
         ldir
         ld      hl,IN_VAL
@@ -321,10 +321,24 @@ iu_next:
         call    OV_COND                 ; (chart2.asm)
         ld      hl,IN_COND
         cp      (hl)
-        jr      z,ic_cap
+        jr      z,ic_dkc
         ld      (hl),a
         ld      (ic_c),a
         ld      hl,ic_s
+        call    puts
+ic_dkc: ld      a,(V_STRICT)            ; the docking setting (row 7), when it changed
+        ld      hl,IN_DOCK
+        cp      (hl)
+        jr      z,ic_cap
+        ld      (hl),a
+        ld      hl,dk_sp
+        and     a
+        jr      z,ic_dk
+        ld      hl,dk_st
+ic_dk:  push    hl
+        ld      hl,dk_s
+        call    puts
+        pop     hl
         call    puts
 ic_cap: ld      a,(V_CAP)               ; the frame cap (row 6, under the messages), when
         inc     a                       ; it changed or the window was redrawn
@@ -353,6 +367,10 @@ cap_s:  defb    1,'2','H','1',1,'3','@',32+28,32+6
 cap_v:  defm    "20/s  "
         defb    0
 cap_t:  defm    "20/s  ", "25/s  ", "off   ", "12.5/s", "16.7/s"      ; V_CAP 0-4
+dk_s:   defb    1,'2','H','1',1,'3','@',32+28,32+7
+        defm    "Docking (=):   ",0
+dk_sp:  defm    "normal",0
+dk_st:  defm    "strict",0
 
 ; missiles: 4 cells at column 3, row 6.  The last ready missile shows the arm state
 ; ($D047: 1 = armed 'S', 2 = locked 'T'), as the Spectrum colours its indicator.

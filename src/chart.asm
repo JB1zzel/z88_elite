@@ -12,9 +12,9 @@
 ;
 ; The charts on the Z88 map are spread over dead game code, by segment: the code that
 ; writes the map runs in segment 2 (the map goes into segment 1 or 3):
-;   chart.asm   8446-85AF (dashboard compass/bars) render, cursor drawing, map binding
+;   chart.asm   8446-85A1 (dashboard compass/bars) render, cursor drawing, map binding
 ;   chart3.asm  8083-80D0 (after the 3D clear JP)  row mapping
-;   chart4.asm  85B0-8618 (dashboard bars)         numbers
+;   chart4.asm  85A2-85DF (dashboard bars)         numbers
 ;   chart5.asm  9B02-9B49 (dashboard icons)        digit rows, map addresses, pixels
 ;   ovl.asm     8391-8444 (dashboard compass)      the digit font (with other glue data)
 ;   chart2.asm  E531-E6AC (the game's crosshair)   segment 3: the cursor list, the list

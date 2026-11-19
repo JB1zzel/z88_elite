@@ -82,6 +82,7 @@ defc IN_MISS  = $CBE0                   ; missile count shown ($FF = unknown)
 defc IN_COMP  = $CBE1                   ; compass h, v, behind shown
 defc IN_COND  = $CBE4                   ; condition letter shown
 defc IN_FCAP  = $CBE5                   ; frame cap shown (+1; 0 = not yet)
+defc IN_DOCK  = $CBE6                   ; docking setting shown
 defc IN_CBUF  = $CC80                   ; compass canvas: 16 words
 defc IN_VAL   = $CBF0                   ; 13 bar values last shown ($FF = unknown)
 defc OUTBUF   = $3F48                   ; output string (S0: GN_Sop reads local memory)
@@ -109,7 +110,9 @@ defc MSG_W    = 23                      ; cells per line (window 1, columns 28-5
 defc CH_MODE  = $3E5F                   ; 1 = window 1 holds a chart's text (no instruments)
 ; charts (chart.asm, overlaid on the dead beeper player at $9551)
 defc V_CAP    = $3E87                   ; frame cap setting 0-4: 20, 25/s, off, 12.5, 16.7/s (= cycles it)
-defc V_FT     = $3E8C                   ; TIM0 (5 ms steps) when the last frame started
+defc V_FT     = $3E8C
+defc V_STRICT = $3E8D                   ; strict docking (the BBC's approach cone): 0 off, 1 on
+defc V_DKK    = $3E8E                   ; the = key, last seen                   ; TIM0 (5 ms steps) when the last frame started
 defc V_CAPK   = $3E8B                   ; the = key as last seen (only a new press counts)
 defc R_MAPB   = $3E88                   ; the map itself (V_MAPB/V_MAPA: where to draw)
 defc R_MAPA   = $3E89
