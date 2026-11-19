@@ -177,7 +177,7 @@ cr_c1:  push    bc
 cr_x:   pop     bc
         ld      c,1
         call    MPB                  ; game bank 1 back
-        jp      MFFULL                  ; (a 240-pixel map: VBUF to it)
+        ret
 
 ; cx_draw: HL = x, y, arm: XOR a "+" into the map (in segment 1): the bar across at
 ; row y, the bar down at column x, each arm/2 to either side

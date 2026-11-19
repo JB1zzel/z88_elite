@@ -15,7 +15,6 @@
         include "error.def"
         include "director.def"
         include "elite.inc"
-        xref    mf_split
         include "ovl.def"               ; data kept in dead game code (ovl.asm)
         xref    msg_put
         xdef    hk_glyph
@@ -909,10 +908,7 @@ view_copy:
         jr      c,vc_nv
         ld      a,2
         ld      (SC_ALL),a
-vc_nv:  ld      a,(MW240)               ; a 240-pixel map: all of VBUF, copied across
-        and     a
-        jp      nz,mf_split
-        ld      a,(V_MAPB)
+vc_nv:  ld      a,(V_MAPB)
         ld      b,a
         ld      c,2
         call    MPB

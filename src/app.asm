@@ -31,27 +31,6 @@ app_entrypoint:
         ld      de,$2000
         ld      bc,glue_end-glue_bin
         ldir
-        ld      hl,($0031)      ; RST 30H fast bank binding (OZ 4.1 on)?  Its code starts
-        inc     hl              ; PUSH, PUSH, LD HL,$04D0: if not, the glue's MPB
-        inc     hl              ; ($2000) becomes OZ Os_Mpb, RET
-        ld      a,(hl)
-        cp      $21
-        jr      nz,old_oz
-        inc     hl
-        ld      a,(hl)
-        cp      $D0
-        jr      nz,old_oz
-        inc     hl
-        ld      a,(hl)
-        cp      $04
-        jr      z,new_oz
-old_oz: ld      hl,MPB
-        ld      (hl),$E7        ; RST 20H
-        inc     hl
-        ld      (hl),Os_Mpb
-        inc     hl
-        ld      (hl),$C9        ; RET
-new_oz:
         xor     a
         ld      b,a
         ld      hl,JT_Z_ERRHAN
@@ -245,9 +224,7 @@ hlp_scr:
         defm    "chart. On the left are the instruments (fuel, shields,", $7F
         defm    "temperatures, speed, roll and dive, energy banks, missiles,", $7F
         defm    "compass), the view's name and the flight messages. Text screens", $7F
-        defm    "such as Status and Market Prices fill the whole width. On OZ 4", $7F
-        defm    "and earlier the map is 240 pixels wide (no wider map shows):", $7F
-        defm    "the view, scanner and charts lose 8 pixels at either side.", 0
+        defm    "such as Status and Market Prices fill the whole width.", 0
 hlp_leave:
         defm    "INDEX suspends the game and it carries on where you left it.", $7F
         defm    "ESC does not quit; to end the game, KILL it from the Index.", 0

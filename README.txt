@@ -3,13 +3,14 @@ Elite for the Cambridge Z88
 
 The ZX Spectrum Elite (Torus / Firebird, 1985) running its own Z80 code on an
 expanded Z88, with a Z88 front end: 3D view, scanner and charts in a 256 x 64
-map (240 x 64 on OZ 4 and earlier, which show no wider map: 8 pixels are lost
-at either side), instruments and all text in OZ windows, keyboard read
+map, instruments and all text in OZ windows, keyboard read
 directly in flight, effects on the Z88 speaker.
 
 Card: elite.epr, 128K (works in OZvm and KLive). Needs an expanded Z88 with
 48K of free RAM (three free 16K banks), OZ 3.0 or later (tested on OZ 3.0,
-4.7 and 5). The application is "Elite" in the Index (#E).
+4.7 and 5; the map opened and found as in Gunther Strube's opengraphics:
+OS_Map MP_GRA, then OS_Sci SC_HR0, banks bound with OS_Mpb). The application
+is "Elite" in the Index (#E).
 
 Keys (the Spectrum's; LEFT SHIFT = CAPS SHIFT, RIGHT SHIFT = SYMBOL SHIFT)
   Flight      S/X climb/dive, N/M roll, SPACE faster, RIGHT SHIFT slower

@@ -22,7 +22,6 @@
         xdef    jt_cm_enter, jt_cm_load, jt_cm_save, jt_tx_band, jt_tx_erase
         xref    tx_band, tx_erase
         xdef    jt_snd_blk, jt_snd_err
-        xdef    mf_split
         xref    cm_enter, cm_load, cm_save
         xdef    jt_st_bit7hl
         xdef    jt_st_ldafc0d
@@ -92,11 +91,8 @@
 ; --- game addresses used here -----------------------------------------------------------
 
 ; --- fixed entries at $2000 (modules assembled before the glue call these by address) ---
-z_mpb:  rst     OZ_MPB          ; MPB ($2000): bind bank B into segment C, old bank in B.
-        ret                     ; OZ before 4.1 has no RST 30H binding: the boot code
-        nop                     ; makes this OZ Os_Mpb, RET
-        nop
-z_mff:  jp      mf_full         ; MFFULL ($2004): the map buffer to a 240-pixel map
+z_mpb:  oz      Os_Mpb          ; MPB ($2000): bind bank B into segment C, old bank in B
+        ret                     ; (OS_Mpb on every OZ: RST 30H measured no faster here)
 
 ; --- jump table: the game's patches call these by name (jt_*, exported to glue.def) ------
 jt_z_halt:
@@ -764,10 +760,7 @@ rn_ch:  ld      hl,CH_SAFE      ; a chart (chart.asm): rendered again only after
         dec     a
         ld      (CH_CNT),a
 rn_go:  ld      (hl),0
-        ld      a,(MW240)       ; a 240-pixel map: drawn in VBUF and copied already
-        and     a
-        jp      nz,ch_render    ; (chart.asm)
-        ld      hl,(V_MAPA)     ; 256: drawn in VBUF too, then copied whole, so the
+        ld      hl,(V_MAPA)     ; the chart drawn in VBUF, then copied whole, so the
         push    hl              ; numbers are never seen erased between the renders
         ld      a,(V_MAPB)      ; while the game draws the chart
         push    af
@@ -829,8 +822,7 @@ rn_col: push    hl
         jr      c,rn_row
         pop     bc
         ld      c,2
-        call    MPB          ; game bank back into segment 2
-        jp      mf_full         ; (a 240-pixel map: VBUF to it)
+        jp      MPB             ; game bank back into segment 2
 rn_cell:
         ld      a,(hl)
         inc     h
@@ -866,49 +858,28 @@ z_redraw:
         call    zr_mclr         ; the old map cleared while still hidden (a text screen
         ld      hl,win          ; over it), not shown again before it is cleared
         call    puts
-        ld      a,(MPB)         ; OZ before 4.1 (MPB made OS_Mpb at boot): 240 at once,
-        cp      $E7             ; no 256 try (MP_MEM there is an Internal error)
-        jr      z,zr_240
-        ld      hl,256          ; a 256-pixel map, if this OZ shows one (OZ 5) ...
-        call    zr_def
-        jp      c,zr_x
-        call    zr_probe
-        jr      nz,zr_240
-        ld      a,'2'           ; ... where MP_MEM tells where it is
-        ld      b,MS_S2
-        ld      c,MP_MEM
-        ld      hl,256
+        ld      a,'2'           ; a 256-pixel map (HL = width - 1), on every OZ, and where
+        ld      bc,MP_GRA       ; it is from OS_Sci (HIRES0: read, then written back), as
+        ld      hl,255          ; in Gunther Strube's opengraphics (Cosmic Payback)
         oz      Os_Map
         jp      c,zr_x
-        xor     a
-        jr      zr_set
-zr_240: ld      hl,240          ; ... else 240 (OZ 4 and before): drawn in VBUF as
-        call    zr_def          ; ever, copied to the map by mf_full / mf_split
-        jp      c,zr_x
-        ld      a,(BLSC_PB2L)   ; the map is where the Blink shows it, HIRES0: PB2 =
-        ld      h,$80           ; address bits 21-13 (only read, not changed).
-        rra                     ; HL = $8000, or $A000 for the bank's upper 8K
-        jr      nc,zr_lo
-        ld      h,$A0
-zr_lo:  ld      l,0
-        ld      b,a             ; B = bank: PB2 >> 1 (bit 7 from the high byte)
-        ld      a,(BLSC_PB2H)
-        rra
-        jr      nc,zr_hi
-        set     7,b
-zr_hi:  ld      a,1
-zr_set: ld      (MW240),a
+        ld      b,0
+        ld      hl,0
+        ld      a,SC_HR0
+        oz      OS_Sci
+        push    bc
+        push    hl
+        oz      OS_Sci
+        pop     hl
+        pop     bc
+        ld      a,h             ; (as seen in segment 2)
+        and     $3F
+        or      $80
+        ld      h,a
         ld      a,b
         ld      (R_MAPB),a      ; the map itself
-        ld      (V_MAPB),a      ; where the map writers write: the map, or VBUF
+        ld      (V_MAPB),a      ; where the map writers write (the chart: VBUF for a time)
         ld      (R_MAPA),hl
-        ld      (V_MAPA),hl
-        ld      a,(MW240)
-        and     a
-        jr      z,zr_clr
-        ld      a,(V_BANKS+2)   ; (VBUF: game bank 3 from $C000, as seen in segment 2)
-        ld      (V_MAPB),a
-        ld      hl,$8000
         ld      (V_MAPA),hl
 zr_clr: call    zr_mclr         ; clear the map (on a first start its memory holds
                                 ; whatever was there before)
@@ -940,120 +911,14 @@ zr_mclr:
         ld      d,h
         ld      e,l
         inc     de
-        ld      bc,240*64/8-1
+        ld      bc,256*64/8-1
         ld      (hl),0
         ldir
         pop     bc
         ld      c,2
         jp      MPB
 
-; zr_def: HL = width: define the map (MP_GRA, the reason in BC for OZ before 5) and
-; write one line through OZ (before OZ 5 the window shows the map only once written to;
-; the contents do not matter, the map is cleared after)
-zr_def: push    hl
-        ld      a,'2'
-        ld      bc,MP_GRA
-        oz      Os_Map
-        pop     hl
-        ret     c
-        ld      a,'2'
-        ld      bc,MP_WR
-        ld      hl,OUTBUF
-        ld      de,0
-        oz      Os_Map
-        or      a
-        ret
 
-; zr_probe: Z if the screen shows the map: a cell of row 0 that refers to HIRES0 (the
-; screen file is where SBR says, A21-A11)
-zr_probe:
-        ld      a,(BLSC_SBRL)   ; bank = SBR >> 3, offset = (SBR & 7) << 11
-        ld      e,a
-        and     7
-        add     a,a
-        add     a,a
-        add     a,a
-        or      $80             ; (in segment 2)
-        ld      h,a
-        ld      a,(BLSC_SBRH)
-        ld      d,a
-        srl     d               ; DE = SBR >> 3 (bank)
-        rr      e
-        srl     d
-        rr      e
-        srl     d
-        rr      e
-        ld      b,e
-        ld      c,2
-        call    MPB
-        push    bc
-        ld      l,1             ; attribute bytes of row 0 (the first 100 cells: the OZ
-        ld      b,100           ; logo at the right is HIRES too)
-zq_lp:  ld      a,(hl)
-        and     $3C
-        cp      $20             ; a HIRES0 (map) cell
-        jr      z,zq_x
-        inc     l
-        inc     l
-        djnz    zq_lp
-        or      1               ; NZ: none
-zq_x:   pop     bc
-        push    af
-        ld      c,2
-        call    MPB
-        pop     af
-        ret
-
-; mf_full / mf_split: VBUF to the 240-pixel map (OZ before 5; nothing on a 256-pixel
-; map).  Full: the middle 240 pixels (charts, renders); split: the view (0-167) and the
-; middle 72 of the scanner panel (176-247).
-mf_full:
-        ld      a,1
-        jr      mf_go
-mf_split:
-        xor     a
-mf_go:  push    hl
-        ld      hl,MW240
-        bit     0,(hl)
-        pop     hl
-        ret     z
-        push    af
-        push    bc
-        push    de
-        push    hl
-        ld      (MF_MODE),a
-        ld      a,(R_MAPB)
-        ld      b,a
-        ld      c,2
-        call    MPB
-        push    bc
-        ld      de,(R_MAPA)
-        ld      hl,VBUF
-mf_r:   ld      a,(MF_MODE)
-        and     a
-        jr      z,mf_s
-        ld      l,8
-        ld      bc,240
-        ldir
-        jr      mf_n
-mf_s:   ld      bc,VW
-        ldir
-        ld      l,176
-        ld      bc,72
-        ldir
-mf_n:   ld      l,0
-        inc     h
-        ld      a,h
-        cp      VBUF/256+8
-        jr      c,mf_r
-        pop     bc
-        ld      c,2
-        call    MPB
-        pop     hl
-        pop     de
-        pop     bc
-        pop     af
-        ret
 
 puts:   ld      a,(hl)
         and     a
@@ -1122,7 +987,10 @@ z_errhan:
         jr      z,z_quit
         xor     a
         ret
-z_quit: xor     a
+z_quit: ld      a,'2'           ; the map given back (MP_DEL), then leave
+        ld      bc,MP_DEL
+        oz      Os_Map
+        xor     a
         oz      Os_Bye
 ; the flight layout (read at boot: kept here, not in ovl.asm): window 1 (instruments, text), window 2 (the map)
 win:    defb    1,'7','#','1',32,32,32+51,32+8,128,1,'2','C','1'

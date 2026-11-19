@@ -27,7 +27,7 @@ test $(stat -c%s snd.bin) -le $((0x982E-0x978B)) || { echo "snd.asm too big"; ex
 $M -I$D/def -b -g -m ovl4.asm                              # (7D12-7D54)
 test $(stat -c%s ovl4.bin) -le $((0x7D55-0x7D12)) || { echo "ovl4.asm too big: $(stat -c%s ovl4.bin)"; exit 1; }
 $M -I$D/def -b -g -oglue.bin @glue.prj                 # glue modules -> glue.def (jt_*)
-grep -q "^Z_MPB .*= 00002000" glue.map && grep -q "^Z_MFF .*= 00002004" glue.map || { echo "glue: MPB/MFFULL not at \$2000/\$2004"; exit 1; }
+grep -q "^Z_MPB .*= 00002000" glue.map || { echo "glue: MPB not at \$2000"; exit 1; }
 G=$(stat -c%s glue.bin); test $G -le $((0x3E00-0x2000)) || { echo "glue too big: $G (variables at \$3E00)"; exit 1; }
 for m in chart2:0xE531:0xE6AD; do
   IFS=: read n a e <<< "$m"                                # the charts, over dead game code

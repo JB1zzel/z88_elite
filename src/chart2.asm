@@ -83,7 +83,6 @@ cc_go:  ld      c,1
         pop     bc
         ld      c,1
         call    MPB
-        call    MFFULL                  ; (a 240-pixel map: VBUF to it)
         pop     ix
         pop     hl
         pop     de
