@@ -64,6 +64,12 @@ expanded:
 ; one bank, so the pool owns it whole; in which order the pages come does not matter.
         ld      de,V_BANKS
         ld      a,3
+        call    bk_alloc
+        ld      de,V_SBANK      ; a fourth: the sound bank (the game's sound code, sndp)
+        ld      a,1
+        call    bk_alloc
+        jr      bk_done
+bk_alloc:                       ; A banks, their numbers to DE ...
 bk_lp:  push    af
         push    de
         ld      a,MM_S1
@@ -99,6 +105,8 @@ bk_nx:  dec     c
         pop     af
         dec     a
         jr      nz,bk_lp
+        ret
+bk_done:
 
 ; --- find the game's three banks -----------------------------------------------------------
 ; On a card they are the three below this one.  Installed as a RAM application they can be
@@ -156,6 +164,15 @@ cp_lp:  push    de
         inc     hl
         dec     d
         jr      nz,cp_lp
+
+        ld      a,(V_SBANK)     ; the game's sound code into the sound bank (it runs there
+        ld      b,a             ; at $C000, in segment 3: sndp.asm)
+        ld      c,1
+        oz      Os_Mpb
+        ld      hl,sndp_bin
+        ld      de,$4000
+        ld      bc,sndp_end-sndp_bin
+        ldir
 
         ld      hl,V_BANKS      ; the working copies' signatures wiped
         ld      iy,sig_tab
@@ -239,7 +256,7 @@ msg_game:
         defm    "Elite: the game's banks were not found (card or RAM install).",0
 msg_mem:
         defb    1,'7','#','1',32,32,32+90,32+8,128,1,'2','C','1'
-        defm    "Elite needs an expanded Z88: not enough free RAM (48K).",0
+        defm    "Elite needs an expanded Z88: not enough free RAM (64K).",0
 msg_unexp:
         defb    1,'7','#','1',32,32,32+90,32+8,128,1,'2','C','1'
         defm    "Sorry, Elite cannot run on a non-expanded Z88.",0
@@ -250,6 +267,9 @@ applname:
 glue_bin:
         binary  "glue.bin"
 glue_end:
+sndp_bin:
+        binary  "sndp.bin"
+sndp_end:
 
 defc BANK_APPL = $3F
 
@@ -334,7 +354,7 @@ hlp_fly:
         defm    "S and X climb and dive, N and M roll. SPACE speeds up and", $7F
         defm    "RIGHT SHIFT slows down. 1, 2, 3 and 4 show the front, rear,", $7F
         defm    "left and right views. Docked, 1 launches.", $7F
-        defm    "= caps the frame rate: 20 (the default), 25, off, 12.5 or", $7F
+        defm    "- caps the frame rate: 20 (the default), 25, off, 12.5 or", $7F
         defm    "16.7 a second. On a fast emulator a cap keeps combat at", $7F
         defm    "an even speed; a real Z88 is seldom faster than the cap.", 0
 hlp_weap:
@@ -379,9 +399,9 @@ hlp_elite:
 hlp_port:
         defm    "The Z88 front end draws the 3D view, scanner, charts and", $7F
         defm    "instruments natively, puts all text in OZ windows, reads the", $7F
-        defm    "keyboard directly in flight, and plays the effects on the", $7F
-        defm    "Z88's speaker. The Lenslok check is gone. Needs an expanded", $7F
-        defm    "Z88 with 48K of free RAM, and OZ 3.0 or later.", 0
+        defm    "keyboard directly in flight, and plays the game's own sound", $7F
+        defm    "on the Z88's speaker. The Lenslok check is gone. Needs an", $7F
+        defm    "expanded Z88 with 64K of free RAM, and OZ 3.0 or later.", 0
 end_of_code:
         defs    $3FC0-end_of_code
         doraplf [in_dor & $3FFF, BANK_APPL]

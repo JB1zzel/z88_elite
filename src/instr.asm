@@ -349,7 +349,7 @@ ic_cap: ld      a,(V_CAP)               ; the frame cap (row 6, under the messag
 ic_s:   defb    1,'2','H','1',1,'3','@',32+23,32+3,1,'2','+','R',' '
 ic_c:   defb    'G',' ',1,'2','-','R',0
 cap_s:  defb    1,'2','H','1',1,'3','@',32+28,32+6
-        defm    "Speed cap (=): "
+        defm    "Speed cap (-): "
 cap_v:  defm    "20/s  "
         defb    0
 cap_t:  defm    "20/s  ", "25/s  ", "off   ", "12.5/s", "16.7/s"      ; V_CAP 0-4

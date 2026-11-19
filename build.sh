@@ -22,7 +22,10 @@ for m in chart6:0x7FC1:0x8042 chart3:0x8083:0x80D1 chart5:0x9B02:0x9B4A chart4:0
   $M -I$D/def -b -g -m $n.asm
   test $(stat -c%s $n.bin) -le $((e-a)) || { echo "$n.asm too big: $(stat -c%s $n.bin) (room $((e-a)))"; exit 1; }
 done
-$M -I$D/def -b -g -m snd.asm                               # sound (978B-982D)
+python3 -I ../tools/mksndp.py elite_ref.asm sndp.asm >/dev/null   # the game's sound code, for the sound bank
+$M -I$D/def -b -g -m sndp.asm                              # -> sndp.def (entries, for the glue)
+test $(stat -c%s sndp.bin) -le 16384
+$M -I$D/def -b -g -m snd.asm                               # the condition box's ship scan (978B-982D)
 test $(stat -c%s snd.bin) -le $((0x982E-0x978B)) || { echo "snd.asm too big"; exit 1; }
 $M -I$D/def -b -g -m ovl4.asm                              # (7D12-7D54)
 test $(stat -c%s ovl4.bin) -le $((0x7D55-0x7D12)) || { echo "ovl4.asm too big: $(stat -c%s ovl4.bin)"; exit 1; }

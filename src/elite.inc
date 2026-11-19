@@ -110,6 +110,10 @@ defc CH_MODE  = $3E5F                   ; 1 = window 1 holds a chart's text (no 
 ; charts (chart.asm, overlaid on the dead beeper player at $9551)
 defc V_CAP    = $3E87                   ; frame cap setting 0-4: 20, 25/s, off, 12.5, 16.7/s (= cycles it)
 defc V_FT     = $3E8C                   ; TIM0 (5 ms steps) when the last frame started
+defc SND_ON   = $3E8D                   ; sound: the game's on/off byte ($FC0E), copied for sndp
+defc SPKC     = $3E8E                   ; sound: Blink COM as OZ has it, speaker bits clear
+defc SND_OLD  = $3E8F                   ; sound: segment 3's bank while sndp runs
+defc V_SBANK  = $3E90                   ; the sound bank (the game's sound code, sndp, at $C000)
 defc V_CAPK   = $3E8B                   ; the = key as last seen (only a new press counts)
 defc R_MAPB   = $3E88                   ; the map itself (V_MAPB/V_MAPA: where to draw)
 defc R_MAPA   = $3E89

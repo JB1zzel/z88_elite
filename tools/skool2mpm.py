@@ -48,13 +48,14 @@ PATCH = {
     0x7FBE: (3, ['JP %s' % G['blit']]),                         # view copy + frame work                                  # Kempston: nothing
     0x8142: (3, ['NOP', 'NOP', 'NOP']),                                 # screen actions: stay on the OZ stack (S0), not $D000
     0xD7F1: (2, ['DEFW JT_TX_CLSJ']),                                        # text control code: clear screen -> tx_clsj
-    0x9527: (3, ['CALL JT_SND_BLK']),                                  # blocking sound effects: a tone (snd.asm), no beeper loop
-    0x9532: (3, ['CALL JT_SND_BLK']),
-    0x953D: (3, ['CALL JT_SND_BLK']),
-    0x9548: (3, ['CALL JT_SND_BLK']),
-    0x7344: (4, ['JP JT_SND_ERR', 'NOP']),                             # freeze menu error beep
+    0x9527: (3, ['JP JT_SND_B0']),                                  # blocking sound effects: the game's own, from the sound bank (sndp.asm)
+    0x9532: (3, ['JP JT_SND_B1']),
+    0x953D: (3, ['JP JT_SND_B2']),
+    0x9548: (3, ['JP JT_SND_B3']),
+    0x7352: (4, ['CALL JT_SPK_ON', 'NOP']),                           # freeze menu error beep: the game's own, speaker on ...
+    0x735A: (3, ['CALL JT_SPK_OFF']),                                 # ... and off (Blink COM SBIT)
     0xED78: (3, ['CALL $7FC1']),                                        # a chart name's system: keep its position (chart6.asm, ldgx)
-    0x7125: (3, ['RET', 'NOP', 'NOP']),                                 # the beeper player (9551-96BE) is chart.asm now
+    0x7125: (3, ['JP JT_SND_FRAME']),                                  # the per-frame sound player: the game's own, from the sound bank (sndp.asm)
     0xE52E: (3, ['JP $E531']),                                          # chart crosshairs: XORed into the map (chart2.asm, E531-E6AC, then chart.asm)
     0x737B: (3, ['CALL JT_TI_7426']),                                       # title text (load commander?) -> window 1
     0x73C6: (3, ['CALL JT_TI_7430']),                                       # title text (press space) -> window 1
