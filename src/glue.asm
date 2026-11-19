@@ -18,6 +18,7 @@
         include "ovl.def"
         include "chart.def"             ; (chart.asm, snd.asm are assembled first)
         include "snd.def"
+        include "screen.def"
         xdef    jt_z_halt
         xdef    jt_cm_enter, jt_cm_load, jt_cm_save, jt_tx_band, jt_tx_erase
         xref    tx_band, tx_erase
@@ -91,8 +92,6 @@
 ; --- game addresses used here -----------------------------------------------------------
 
 ; --- fixed entries at $2000 (modules assembled before the glue call these by address) ---
-z_mpb:  oz      Os_Mpb          ; MPB ($2000): bind bank B into segment C, old bank in B
-        ret                     ; (OS_Mpb on every OZ: RST 30H measured no faster here)
 
 ; --- jump table: the game's patches call these by name (jt_*, exported to glue.def) ------
 jt_z_halt:
@@ -775,7 +774,7 @@ rn_go:  ld      (hl),0
         ld      (V_MAPA),hl
         ld      b,a
         ld      c,2
-        call    MPB
+        oz      Os_Mpb
         push    bc
         ex      de,hl
         ld      hl,VBUF
@@ -783,14 +782,15 @@ rn_go:  ld      (hl),0
         ldir
         pop     bc
         ld      c,2
-        jp      MPB
+        oz      Os_Mpb
+        ret
 rn_std: ld      a,(TI_MODE)     ; flight (the instruments up): the Spectrum screen is
         and     a               ; blank, never shown (the map would clear when the game
         ret     z               ; pauses its view frames, as around a kill)
         ld      a,(V_MAPB)
         ld      b,a
         ld      c,2
-        call    MPB
+        oz      Os_Mpb
         push    bc
         ld      de,(V_MAPA)
         ld      c,0             ; C = map character row 0-7 (Spectrum char rows 2C, 2C+1)
@@ -822,7 +822,8 @@ rn_col: push    hl
         jr      c,rn_row
         pop     bc
         ld      c,2
-        jp      MPB             ; game bank back into segment 2
+        oz      Os_Mpb           ; game bank back into segment 2
+        ret
 rn_cell:
         ld      a,(hl)
         inc     h
@@ -858,25 +859,19 @@ z_redraw:
         call    zr_mclr         ; the old map cleared while still hidden (a text screen
         ld      hl,win          ; over it), not shown again before it is cleared
         call    puts
-        ld      a,'2'           ; a 256-pixel map (HL = width - 1), on every OZ, and where
-        ld      bc,MP_GRA       ; it is from OS_Sci (HIRES0: read, then written back), as
-        ld      hl,255          ; in Gunther Strube's opengraphics (Cosmic Payback)
-        oz      Os_Map
-        jp      c,zr_x
-        ld      b,0
-        ld      hl,0
-        ld      a,SC_HR0
-        oz      OS_Sci
+        ld      a,'2'           ; the map: 256 x 64, opened and bound into segment 2 by
+        ld      b,MS_S2         ; Gunther Strube's opengraphics (below; works on all OZ)
+        ld      hl,256
+        call    opengraphics    ; HL = map base in segment 2, B = segment 2's old bank
         push    bc
-        push    hl
-        oz      OS_Sci
-        pop     hl
-        pop     bc
-        ld      a,h             ; (as seen in segment 2)
-        and     $3F
-        or      $80
-        ld      h,a
+        ld      c,MS_S2
+        oz      Os_Mgb          ; B = the map's bank (now in segment 2)
         ld      a,b
+        pop     bc
+        push    af
+        ld      c,MS_S2
+        oz      Os_Mpb          ; segment 2 back as it was
+        pop     af
         ld      (R_MAPB),a      ; the map itself
         ld      (V_MAPB),a      ; where the map writers write (the chart: VBUF for a time)
         ld      (R_MAPA),hl
@@ -905,7 +900,7 @@ zr_mclr:
         ld      a,(R_MAPB)
         ld      b,a
         ld      c,2
-        call    MPB
+        oz      Os_Mpb
         push    bc
         ld      hl,(R_MAPA)
         ld      d,h
@@ -916,8 +911,77 @@ zr_mclr:
         ldir
         pop     bc
         ld      c,2
-        jp      MPB
+        oz      Os_Mpb
+        ret
 
+
+
+
+; ---------------------------------------------------------------------------------------
+;
+;    Open graphics window, static size of <Width> x 64 pixels, and bind graphics
+;    This generic routine is a drop-in replacement of OS_Map, MP_MEM (OZ 4.2 and later)
+;    Works for all OZ ROMs (V2.2 -> modern era)
+;
+;    The Width specifier defines the map width in modulus 8 pixels,
+;    ie. 8, 16, 24, 32, 40, 48, 56, 64 ...
+;
+;    IN:  
+;         A = window ID ('1' to '6')
+;         B = MS_Sx mask (for segment 0, 1, 2 or 3)
+;         HL = width of map (modulus 8)
+;
+;    OUT: 
+;         HL contains pointer to base of graphics area in segment Sx
+;         B = prev bank binding of segment Sx
+;         The graphics area is bound into the segment specified
+;         by the input B register.
+;
+;    Registers changed after return:
+;         af.cde../ixiy  same
+;         ..b...hl/....  different
+;
+; Design & programming by Gunther Strube hello@bits4fun.net, Copyright (C) 1995-98, 2026
+;
+.opengraphics
+        push af
+        push de
+        push bc
+
+        push bc
+        ld   bc, MP_Gra
+        push af
+        ld   a,l
+        and  @11111000           ; width always in 8 bit size...
+        ld   l,a                 ; HL now the map width...
+        dec  hl                  ; always one less than actual width...
+        pop  af
+        oz   OS_Map              ; create map width of 256 pixels
+        ld   b,0
+        ld   hl,0                ; dummy address
+        ld   a,SC_HR0
+        oz   OS_Sci              ; get base address of map area (hires0)
+        push bc
+        push hl
+        oz   OS_Sci              ; (and re-write original address)
+        pop  hl
+        pop  bc
+        pop  de
+        ld   c,d                 ; MS_Sx segment specifier
+        oz   OS_Mpb              ; bind hires0 memory into specified segment, B = old bank binding
+        ld   a,h
+        and  @00111111
+        rrc  d
+        rrc  d                   ; convert MS_Sx to MM_Sx
+        or   d
+        ld   h,a                 ; HL = base address of HIRES0 in segment Sx
+
+        ld   a,b
+        pop  bc
+        ld   b,a                 ; return old bank binding in Segment Sx
+        pop  de
+        pop  af
+        ret
 
 
 puts:   ld      a,(hl)
@@ -937,7 +1001,7 @@ z_start:                        ; segments 1 and 2 already hold game banks 1 and
         ld      a,(V_BANKS+2)
         ld      b,a
         ld      c,3
-        call    MPB          ; game bank 3 into segment 3 (the card bank leaves)
+        oz      Os_Mpb           ; game bank 3 into segment 3 (the card bank leaves)
         in      a,($D0)
         ld      (V_TLAST),a
         xor     a

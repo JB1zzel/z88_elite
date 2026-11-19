@@ -3,6 +3,8 @@
 ; bank $3F = this bank.  Needs an expanded Z88 (three free 16K RAM banks).
         module eliteapp
         include "stdio.def"
+        include "fileio.def"
+        include "time.def"
         include "dor.def"
         include "macros.def"
         include "error.def"
@@ -37,6 +39,18 @@ app_entrypoint:
         oz      Os_Erh
         ld      hl,applname
         oz      Dc_Nam
+
+        ld      ix,-1           ; an expanded Z88? (Gunther Strube's check, as in Cosmic
+        ld      a,FA_EOF        ; Payback: OS_Frm FA_EOF on handle -1 gives Fz = 1 on an
+        oz      OS_Frm          ; expanded machine)
+        jr      z,expanded
+        ld      hl,msg_unexp
+        call    PUTS            ; (glue, already in RAM)
+        ld      bc,500
+        oz      OS_Dly          ; 5 s to read it
+        xor     a
+        oz      OS_Bye
+expanded:
 
         ld      c,MS_S3         ; which card bank are we?
         oz      Os_Mgb
@@ -126,21 +140,16 @@ cp_lp:  push    de
 no_mem2:
         pop     af
 no_mem: ld      hl,msg_mem
-        ld      b,0
-pm:     ld      a,(hl)
-        and     a
-        jr      z,wait
-        push    hl
-        oz      Os_Out
-        pop     hl
-        inc     hl
-        jr      pm
+        call    PUTS            ; (glue, already in RAM)
 wait:   oz      Os_In
         jr      wait
 
 msg_mem:
         defb    1,'7','#','1',32,32,32+90,32+8,128,1,'2','C','1'
-        defm    "Elite needs an expanded Z88: not enough free RAM (48K).",0
+        defm    "Elite needs 48K of free RAM: not enough is free.",0
+msg_unexp:
+        defb    1,'7','#','1',32,32,32+90,32+8,128,1,'2','C','1'
+        defm    "Sorry, Elite cannot run on a non-expanded Z88.",0
 
 applname:
         defm    "Elite",0

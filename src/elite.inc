@@ -109,7 +109,6 @@ defc CH_MODE  = $3E5F                   ; 1 = window 1 holds a chart's text (no 
 ; charts (chart.asm, overlaid on the dead beeper player at $9551)
 defc R_MAPB   = $3E88                   ; the map itself (V_MAPB/V_MAPA: where to draw)
 defc R_MAPA   = $3E89
-defc MPB      = $2000                   ; glue: bind (RST 30H, or OZ Os_Mpb before OZ 4.1)
 defc OV_CROSS  = $E531                  ; the chart cursor, XORed into the map (chart2.asm)
 defc OV_LIST   = $E534                  ; the numbered systems into window 1 (chart2.asm)
 defc OV_COND   = $E537                  ; the condition letter (chart2.asm)
@@ -140,5 +139,3 @@ defc LB_MAX   = 32                      ; chart is up
 defc SND_N    = $3E61                   ; sound: frames left of the effect playing
 defc SND_P    = $3E62                   ; sound: its pattern (word, bit 0 = next frame)
 defc CM_ON    = $3E5E                   ; 1 = the disk menu (D90A) is up: its text is a text screen
-defc OS_Sci   = $D406                   ; alter screen info (screen.def)
-defc SC_HR0   = $03                     ; HIRES0

@@ -2,6 +2,7 @@
 ; game's own crosshair drawing (E52E jumps here; E531-E6AC is never reached); segment 3,
 ; so nothing here touches the map while it is bound into segment 3
         module  chart2
+        include "macros.def"
         include "memory.def"
         include "elite.inc"
         include "glue.def"
@@ -82,7 +83,7 @@ cc_go:  ld      c,1
         call    cx_draw
         pop     bc
         ld      c,1
-        call    MPB
+        oz      Os_Mpb
         pop     ix
         pop     hl
         pop     de

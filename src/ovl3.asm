@@ -2,6 +2,8 @@
 ; Spectrum blip plot, 9788 JP JT_Z_BLIP; never reached); segment 2, assembled before the
 ; glue (-> ovl3.def)
         module  ovl3
+        include "macros.def"
+        include "memory.def"
         include "elite.inc"
         org     $9852
         xdef    ch_isrow, mbind
@@ -37,6 +39,6 @@ mbind:  ld      a,c
         ld      (CR_HI),a
         ld      a,(V_MAPB)
         ld      b,a
-        call    MPB
+        oz      Os_Mpb
         ret
 

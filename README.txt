@@ -8,9 +8,10 @@ directly in flight, effects on the Z88 speaker.
 
 Card: elite.epr, 128K (works in OZvm and KLive). Needs an expanded Z88 with
 48K of free RAM (three free 16K banks), OZ 3.0 or later (tested on OZ 3.0,
-4.7 and 5; the map opened and found as in Gunther Strube's opengraphics:
-OS_Map MP_GRA, then OS_Sci SC_HR0, banks bound with OS_Mpb). The application
-is "Elite" in the Index (#E).
+4.7 and 5). The application is "Elite" in the Index (#E). On a non-expanded
+Z88 it says so and returns to the Index.
+The expanded check and the map routine (opengraphics, in src/glue.asm) are
+Gunther Strube's, from Cosmic Payback, kept as he wrote them.
 
 Keys (the Spectrum's; LEFT SHIFT = CAPS SHIFT, RIGHT SHIFT = SYMBOL SHIFT)
   Flight      S/X climb/dive, N/M roll, SPACE faster, RIGHT SHIFT slower

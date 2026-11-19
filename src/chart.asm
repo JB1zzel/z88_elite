@@ -22,6 +22,7 @@
 ;   chart6.asm  7FC1-8041 (the old screen copy)    segment 1: distances, range, the system
 ;                                                  under the cursor (no map access)
         module  chart
+        include "macros.def"
         include "memory.def"
         include "elite.inc"
         include "chart3.def"
@@ -126,7 +127,7 @@ cr_nx:  pop     af
         jr      c,cr_row
         pop     bc
         ld      c,3
-        call    MPB                  ; game bank 3 back
+        oz      Os_Mpb           ; game bank 3 back
         ld      c,1                     ; the numbers and the cursors: map in segment 1
         call    mbind
         push    bc
@@ -176,7 +177,7 @@ cr_c1:  push    bc
         djnz    cr_c1
 cr_x:   pop     bc
         ld      c,1
-        call    MPB                  ; game bank 1 back
+        oz      Os_Mpb           ; game bank 1 back
         ret
 
 ; cx_draw: HL = x, y, arm: XOR a "+" into the map (in segment 1): the bar across at

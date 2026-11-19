@@ -911,7 +911,7 @@ view_copy:
 vc_nv:  ld      a,(V_MAPB)
         ld      b,a
         ld      c,2
-        call    MPB
+        oz      Os_Mpb
         push    bc
         ld      a,(SC_ALL)              ; scanner rows to copy: all for a new background,
         and     a                       ; else rows with blips now or last frame
@@ -947,7 +947,7 @@ vc_ns:  pop     de
         jp      nz,vc_lp
 vc_x:   pop     bc
         ld      c,2
-        call    MPB
+        oz      Os_Mpb
         ret
 
 ; ---------------------------------------------------------------------------------------
