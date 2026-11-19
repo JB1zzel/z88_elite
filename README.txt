@@ -10,6 +10,12 @@ Card: elite.epr, 128K (works in OZvm and KLive). Needs an expanded Z88 with
 48K of free RAM (three free 16K banks), OZ 3.0 or later (tested on OZ 3.0,
 4.7 and 5). The application is "Elite" in the Index (#E). On a non-expanded
 Z88 it says so and returns to the Index.
+RAM application (no card needed): copy elite.app with elite.ap0-elite.ap3 into one
+directory on the Z88 (OZ 4.6 or later, or the Installer popdown), mark elite.app in
+the Filer and press INDEX; on OZ 5 elite-oz5.app alone does the same (compressed).
+Installed, Elite takes 64K of RAM for itself and still copies the game into three
+more banks to run (112K in all; the card version needs only the 48K).  It finds its
+game banks wherever the install put them.
 The expanded check and the map routine (opengraphics, in src/glue.asm) are
 Gunther Strube's, from Cosmic Payback, kept as he wrote them.
 
@@ -19,7 +25,7 @@ Keys (the Spectrum's; LEFT SHIFT = CAPS SHIFT, RIGHT SHIFT = SYMBOL SHIFT)
   Weapons     A or 0 laser, T target missile, F fire it, U unarm,
               E ECM, W energy bomb, Q escape pod, C docking computer
               TAB forces an encounter (added for this version)
-  Speed cap   = cycles the frame cap: 20 (default), 25, off, 12.5, 16.7
+  Speed cap   = (or -) cycles the frame cap: 20 (default), 25, off, 12.5, 16.7
               frames a second; shown in flight under the messages.  On a
               fast emulator (OZvm at x5) it keeps combat at an even speed
               while each frame is drawn cleanly; a real Z88 is seldom faster

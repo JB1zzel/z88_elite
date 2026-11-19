@@ -4,7 +4,7 @@ set -e
 cd "$(dirname "$0")/src"
 D=${DEVKIT:-/home/claude/in/devkit/z88-devkit}
 M=${MPM:-$D/bin/mpm}                                              # mpm 2.2+ (REPT)
-Z=${Z88CARD:-$D/bin/z88card}                                       # z88card 2.1+
+Z=${Z88CARD:-$D/bin/z88card}                                       # z88card 2.2 with -ramapp
 S=${SKOOL:-/home/claude/in/elite/elite-skoolkit-master/src/elite.skool}
 python3 -I ../tools/skool2mpm.py "$S" elite_ref.asm >/dev/null     # the unmodified game (genfast reads its tokens)
 $M -b elite_ref.asm
@@ -46,8 +46,18 @@ for m in snd:0x978B ovl3:0x9852 ovl4:0x7D12 chart6:0x7FC1 chart:0x9551 chart2:0x
   IFS=: read n a <<< "$m"
   dd if=$n.bin of=elite_z88.bin bs=1 seek=$((a-0x4000)) conv=notrunc status=none
 done
-# 128K card (KLive wants a real EPROM size): game in banks $3C-$3E, application bank $3F.
-# 128K card: the 48K game image in banks $3C-$3E, the application bank on top
-# (needs z88card 2.2: 2.1 loaded nothing from a binary larger than 16K)
-$Z -sz 128 ../elite.epr elite_z88.bin 3c0000 app.bin 3f0000 >/dev/null
-echo "elite.epr: $(stat -c%s ../elite.epr) bytes; glue $(stat -c%s glue.bin) bytes"
+# each game bank's signature, in code the game never runs (app.asm finds the banks by it:
+# on a card they are the three below the application, in a RAM install anywhere)
+printf 'EZ\x88\x01' | dd of=elite_z88.bin bs=1 seek=$((0x70C9-0x4000)) conv=notrunc status=none
+printf 'EZ\x88\x02' | dd of=elite_z88.bin bs=1 seek=$((0xA83F-0x4000)) conv=notrunc status=none
+printf 'EZ\x88\x03' | dd of=elite_z88.bin bs=1 seek=$((0xC000-0x4000)) conv=notrunc status=none
+# the 48K image as three 16K banks, each loaded at the address it is used at (z88card
+# records one address per load, for the RAM application header)
+dd if=elite_z88.bin of=game1.bin bs=16384 skip=0 count=1 status=none
+dd if=elite_z88.bin of=game2.bin bs=16384 skip=1 count=1 status=none
+dd if=elite_z88.bin of=game3.bin bs=16384 skip=2 count=1 status=none
+# 128K card (KLive wants a real EPROM size): game in banks $3C-$3E, application bank $3F,
+# plus the RAM application (z88card -ramapp, Nov 2026): elite.app + elite.ap0-ap3 (legacy
+# Installer / OZ 4.6+) and elite-oz5.app (OZ 5, compressed)
+$Z -ramapp -sz 128 ../elite.epr game1.bin 3c4000 game2.bin 3d8000 game3.bin 3ec000 app.bin 3fc000 >/dev/null
+echo "elite.epr: $(stat -c%s ../elite.epr) bytes; glue $(stat -c%s glue.bin) bytes; RAM app: $(ls ../elite.app ../elite.ap? ../elite-oz5.app | wc -l) files"

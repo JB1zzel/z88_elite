@@ -17,6 +17,7 @@
         org $C000
 
 defc V_CARD   = $3F20           ; card bank of this application bank
+defc V_SRC    = $3F21           ; the three game banks found (3 bytes)
 defc V_LOG    = $3F28           ; boot log (debug)
 defc REQPAGES = 32              ; $2000-$3FFF
 defc SAFEDATA = 0
@@ -99,17 +100,50 @@ bk_nx:  dec     c
         dec     a
         jr      nz,bk_lp
 
-; --- copy the game from the card into the RAM banks --------------------------------------
-        ld      hl,V_BANKS
-        ld      a,(V_CARD)
+; --- find the game's three banks -----------------------------------------------------------
+; On a card they are the three below this one.  Installed as a RAM application they can be
+; anywhere: each carries a signature (build.sh) in code the game never runs, so any bank
+; that has it will do.  The working copies lose theirs (below), so an old copy left in RAM
+; from an earlier session is never taken for the game.
+        ld      ix,V_SRC
+        ld      iy,sig_tab
+        ld      d,0             ; D = game bank 0-2
+fb_lp:  ld      a,(V_CARD)      ; the card's own: this bank - 3 + D
         sub     3
-        ld      e,a             ; E = card bank of the next 16K
+        add     a,d
+        call    fb_test
+        jr      z,fb_got
+        ld      a,$FF           ; else every bank, from the top
+fb_scan:
+        push    af
+        call    fb_test
+        jr      z,fb_got2
+        pop     af
+        dec     a
+        cp      $1F
+        jr      nz,fb_scan
+        jp      no_game
+fb_got2:
+        pop     af
+fb_got: ld      (ix+0),a
+        inc     ix
+        ld      bc,6
+        add     iy,bc
+        inc     d
+        ld      a,d
+        cp      3
+        jr      nz,fb_lp
+
+; --- copy the game into the RAM banks ------------------------------------------------------
+        ld      hl,V_BANKS
+        ld      ix,V_SRC
         ld      d,3
 cp_lp:  push    de
         push    hl
-        ld      b,e
+        ld      b,(ix+0)
+        inc     ix
         ld      c,1
-        oz      Os_Mpb          ; card bank -> segment 1
+        oz      Os_Mpb          ; game bank -> segment 1
         ld      b,(hl)
         ld      c,2
         oz      Os_Mpb          ; RAM bank -> segment 2
@@ -120,9 +154,25 @@ cp_lp:  push    de
         pop     hl
         pop     de
         inc     hl
-        inc     e
         dec     d
         jr      nz,cp_lp
+
+        ld      hl,V_BANKS      ; the working copies' signatures wiped
+        ld      iy,sig_tab
+        ld      d,3
+ws_lp:  ld      b,(hl)
+        ld      c,1
+        push    hl
+        oz      Os_Mpb
+        ld      l,(iy+0)
+        ld      h,(iy+1)
+        ld      (hl),0
+        pop     hl
+        inc     hl
+        ld      bc,6
+        add     iy,bc
+        dec     d
+        jr      nz,ws_lp
 
         ld      a,1
         ld      (TI_MODE),a        ; (no instruments yet: the title comes first)
@@ -144,6 +194,49 @@ no_mem: ld      hl,msg_mem
 wait:   oz      Os_In
         jr      wait
 
+; fb_test: A = bank: Z if it holds game bank D's signature (IY -> its sig_tab entry).
+; Binds the bank into segment 1.  Keeps A, D, IX, IY.
+fb_test:
+        push    af
+        push    de
+        ld      b,a
+        ld      c,1
+        oz      Os_Mpb
+        ld      l,(iy+0)        ; HL = the signature's address in segment 1
+        ld      h,(iy+1)
+        push    iy
+        pop     de
+        inc     de
+        inc     de              ; DE -> the 4 signature bytes
+        ld      b,4
+ft_lp:  ld      a,(de)
+        cp      (hl)
+        jr      nz,ft_x
+        inc     de
+        inc     hl
+        djnz    ft_lp
+ft_x:   pop     de
+        pop     bc              ; (B = the bank; flags from the compare)
+        ld      a,b
+        ret
+
+; the game banks' signatures (build.sh writes them): address in segment 1, 4 bytes
+sig_tab:
+        defw    $70C9           ; game bank 0 ($4000-$7FFF): dead code at $70C9
+        defb    'E','Z',$88,1
+        defw    $683F           ; game bank 1 ($8000-$BFFF): dead code at $A83F
+        defb    'E','Z',$88,2
+        defw    $4000           ; game bank 2 ($C000-$FFFF): VBUF at $C000
+        defb    'E','Z',$88,3
+
+no_game:
+        ld      hl,msg_game
+        call    PUTS
+        jp      wait
+
+msg_game:
+        defb    1,'7','#','1',32,32,32+90,32+8,128,1,'2','C','1'
+        defm    "Elite: the game's banks were not found (card or RAM install).",0
 msg_mem:
         defb    1,'7','#','1',32,32,32+90,32+8,128,1,'2','C','1'
         defm    "Elite needs an expanded Z88: not enough free RAM (48K).",0

@@ -378,8 +378,10 @@ zb_sc:  push    af
         pop     af
         rlca
         jr      c,zb_sc
-        ld      a,(V_KEYS+3)        ; = (row A11, bit 7; no Spectrum key): a new press
-        and     $80                 ; moves the frame cap on
+        ld      a,(V_KEYS+2)        ; = or - (bit 7 of rows A10 and A11: = and - on a
+        ld      hl,V_KEYS+3         ; Z88 and in OZvm; Z88e.c has them swapped; neither
+        or      (hl)                ; is a Spectrum key): a new press moves the frame
+        and     $80                 ; cap on
         ld      hl,V_CAPK
         cp      (hl)
         ld      (hl),a
