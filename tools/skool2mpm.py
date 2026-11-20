@@ -18,6 +18,7 @@ G = dict(halt='JT_Z_HALT', st_bit7hl='JT_ST_BIT7HL', st_ldafc0d='JT_ST_LDAFC0D',
 
 # multi-byte patches: address -> (bytes replaced, [instructions])
 PATCH = {
+    0x7C92: (3, ['JP Z_DPLOT']),                                          # stardust plot, with one frame of trail (view.asm)
     0x78C7: (5, ['CALL S_DUST', 'NOP', 'NOP']),                           # stardust count: 16, or 8 (the ] key; snd.asm)
     0xF51F: (25, ['DEFM "PRESS ANY KEY TO SAVE   ",$00']),                  # message 2 (was START TAPE, THEN PRESS ANY KEY): same length,
     0xF538: (13, ['DEFM "NO SUCH FILE",$00']),                                # message 3 (was TAPE LOADING ERROR): the tokens after stay put

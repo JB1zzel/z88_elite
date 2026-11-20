@@ -17,7 +17,7 @@ Installed, Elite takes 64K of RAM for itself and still copies the game into thre
 more banks to run (112K in all; the card version needs only the 48K).  It finds its
 game banks wherever the install put them.
 Start-up: the Spectrum's loading picture, still in the game image (the Spectrum's
-screen memory), scrolls up the map and off the top before the title, about three
+screen memory), scrolls up the map and off the top before the title, about six
 seconds; the Torus and Firebird logos are left out (src/app.asm, intro).
 
 Faces: which faces of a ship can be seen is worked out the BBC Micro's way (the

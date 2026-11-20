@@ -194,9 +194,9 @@ ws_lp:  ld      b,(hl)
 
 ; intro: the Spectrum's loading picture, which the tape image leaves in the Spectrum's
 ; screen memory (game bank 1, $4000-$5AFF; the game clears it when it starts), scrolled
-; up through the map from below and off the top, three lines a step (a step takes about
-; 34 ms on a Z88; never less than 25 ms, by TIM0, on a faster emulator): about three
-; seconds.  Light colours (green, cyan, yellow, white) are
+; up through the map from below and off the top, two lines a step, a step every 45 ms
+; (by TIM0: drawing one takes about 34 ms on a Z88, so the pace is the same on a faster
+; emulator): 128 steps, about six seconds.  Light colours (green, cyan, yellow, white) are
 ; the picture, dark pixels on the Z88; the Torus and Firebird logos are left out.
 defc FR_S = $3F08                       ; V_TMP: the top line shown (signed)
 defc FR_T = $3F28                       ; V_LOG: TIM0 at the last step
@@ -279,16 +279,16 @@ in_bn:  inc     c
         ld      b,a
         ld      c,2
         oz      Os_Mpb                  ; the map -> segment 2
-        ld      hl,-63              ; (-63 + 3n reaches 192)
+        ld      hl,-64              ; (-64 + 2n reaches 192)
         ld      (FR_S),hl
         in      a,($D0)
         ld      (FR_T),a
-in_st:  ld      hl,FR_T                 ; at most a step every 25 ms
+in_st:  ld      hl,FR_T                 ; a step every 45 ms (drawing one takes 34)
 in_wt:  in      a,($D0)
         sub     (hl)
         jr      nc,in_w2
         add     a,200
-in_w2:  cp      5
+in_w2:  cp      9
         jr      c,in_wt
         in      a,($D0)
         ld      (hl),a
@@ -338,7 +338,6 @@ in_nx:  inc     c
         cp      64
         jr      nz,in_ln
         ld      hl,(FR_S)
-        inc     hl
         inc     hl
         inc     hl
         ld      (FR_S),hl

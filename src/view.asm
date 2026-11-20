@@ -27,7 +27,7 @@
         xdef    z_clear
         xdef    z_line
         xdef    z_plot
-        xdef    z_star
+        xdef    z_star, z_dplot
         xdef    z_title
         xdef    z_title_end
         xref    tx_route
@@ -778,6 +778,49 @@ m8_m:   add     a,l
         ret     nc
         inc     h
         ret
+
+
+; z_dplot: the stardust plot (7C92, once a frame), with trails: last frame's specks are
+; drawn again beside this frame's, so the slow LCD of a real Z88 shows each moving
+; speck as a faint streak rather than hardly at all.  The game's list: $7F80 specks at
+; $7F82, 3 bytes each (address, mask; off-view specks point at spare RAM with mask 0).
+; OR, not the game's XOR: the view is cleared every frame, and a speck and its trail
+; may meet.
+z_dplot:ld      hl,dp_list
+        ld      a,(dp_n)
+        call    dp_one                  ; last frame's
+        ld      hl,$7F82
+        ld      a,($7F80)
+        ld      (dp_n),a
+        push    af
+        call    dp_one                  ; this frame's
+        pop     af
+        and     a
+        ret     z
+        ld      c,a                     ; kept for the next frame
+        add     a,a
+        add     a,c
+        ld      c,a
+        ld      b,0
+        ld      hl,$7F82
+        ld      de,dp_list
+        ldir
+        ret
+dp_one: and     a
+        ret     z
+        ld      b,a
+dp_lp:  ld      e,(hl)
+        inc     hl
+        ld      d,(hl)
+        inc     hl
+        ld      a,(de)
+        or      (hl)
+        ld      (de),a
+        inc     hl
+        djnz    dp_lp
+        ret
+dp_n:   defb    0
+dp_list:defs    16*3
 
 cl8:    bit     7,h                     ; HL (signed) held to 0..255 in A
         jr      nz,cl8_0
