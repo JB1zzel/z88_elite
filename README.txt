@@ -16,12 +16,15 @@ the Filer and press INDEX; on OZ 5 elite-oz5.app alone does the same (compressed
 Installed, Elite takes 64K of RAM for itself and still copies the game into three
 more banks to run (112K in all; the card version needs only the 48K).  It finds its
 game banks wherever the install put them.
-Strict docking (the = key in flight, off by default): adds the BBC Micro's cone
-check to the Spectrum's docking rules.  The Spectrum docks you anywhere on the
+Docking (the = key in flight: normal, strict, BBC; normal by default).  Strict
+adds the BBC Micro's cone check to the Spectrum's docking rules.  The Spectrum docks you anywhere on the
 station's face once its slot faces you; strict docking also needs the station
 within about 21 degrees of straight ahead, or you bounce off and take damage, as
-the Spectrum does for a bad angle (src/dock.asm).  The BBC's roll check is left
-out: at the Z88's frame rate matching the slot's spin would be too hard.
+the Spectrum does for a bad angle (src/dock.asm).  BBC adds the BBC's roll
+check as well: the slot within 33.6 degrees of level (the Spectrum's vectors are
+127 long, so |roofv_x_hi| at least 106; the BBC's 80 of 96).  At a real Z88's
+frame rate matching the slot's spin is hard; on a fast emulator it plays like
+the BBC.
 Sound: the Spectrum's own sound code (the launch, laser, hits, explosions, the
 missile-lock and freeze-menu beeps), running where the Spectrum has it; each OUT to
 the beeper is patched into a call that sets the Z88's speaker bit (src/snd.asm).

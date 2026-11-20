@@ -5,17 +5,18 @@
 ; ahead, |x| and |y| at most 3/8 z (a square cone: 21-28 degrees), else the
 ; Spectrum's bounce (B595: a bump and damage).  IX = the station: x, y, z at
 ; +0/+1, +3/+4, +6/+7, each below $B4 here (the contact test), so no carries.
-; The BBC's roll check (the slot level) is not used.
+; V_STRICT 2 (BBC) adds the BBC's roll check: dk_roll, in snd.asm.
         module  dock
         org     $85E0                   ; dead game code: the dashboard bars (84D9,
                                         ; CALLs to it go to a RET), after chart4
         include "elite.inc"
         xdef    dk_check
+        include "snd.def"
 
 dk_check:
         ld      a,(V_STRICT)
         and     a
-        jr      z,dk_ok
+        jp      z,dk_ok         ; normal: the Spectrum's checks alone
         ld      l,(ix+6)
         ld      h,(ix+7)
         srl     h
@@ -37,6 +38,4 @@ dk_check:
         ld      d,(ix+4)
         sbc     hl,de
         jp      c,$B595         ; too far above or below
-dk_ok:  ld      a,1             ; docked (B58F)
-        ld      ($9C9A),a
-        ret
+        jp      dk_roll         ; BBC: the roll check too (snd.asm, for room)

@@ -10,7 +10,7 @@
                                         ; 9788 JP JT_Z_BLIP (978B-982D); segment 2
         include "blink.def"
         include "elite.inc"
-        xdef    s_and, s_on, s_off, s_be, beeper, snd_cond
+        xdef    s_and, s_on, s_off, s_be, beeper, snd_cond, dk_roll, dk_ok
 
 s_and:  and     $18             ; 95B0: AND $18 / OUT ($FE),A
         jr      spk_a
@@ -68,6 +68,23 @@ bp_dly: dec     hl
         or      l
         jr      nz,bp_dly
         pop     hl
+        ret
+
+; dk_roll: the end of the docking check (dock.asm; here for room).  Strict docking
+; at its BBC setting (V_STRICT 2) adds the BBC's roll check: the slot within 33.6
+; degrees of level (the BBC: |roofv_x_hi| at least 80 of its unit vector's 96), else
+; the Spectrum's bounce (B595).  The Spectrum's unit vectors are 127 long (a station
+; in the original: roofv 56, 115, 0), so here |roofv_x_hi| (IX+$10) at least 106.
+ROLL_MIN equ 106                ; 127 * 80/96 (mpm names ignore case: not DK_ROLL)
+dk_roll:ld      a,(V_STRICT)
+        cp      2
+        jr      c,dk_ok
+        ld      a,(ix+$10)
+        add     a,a             ; |roofv_x_hi| * 2 (the sign dropped)
+        cp      ROLL_MIN*2
+        jp      c,$B595         ; the slot too far off level
+dk_ok:  ld      a,1             ; docked (B58F)
+        ld      ($9C9A),a
         ret
 
 ; snd_cond (kept here for room): the condition from the ship slots 1-7 ($27 bytes from

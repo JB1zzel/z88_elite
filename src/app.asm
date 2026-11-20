@@ -335,8 +335,8 @@ hlp_fly:
         defm    "RIGHT SHIFT slows down. 1-4 show the front, rear, left and", $7F
         defm    "right views. Docked, 1 launches. - caps the frame rate: 20", $7F
         defm    "(default), 25, off, 12.5 or 16.7 a second, for fast", $7F
-        defm    "emulators. = turns strict docking on (come in close to the", $7F
-        defm    "slot's centre line, as on the BBC Micro) or off.", 0
+        defm    "emulators. = sets docking: normal, strict (near the slot's", $7F
+        defm    "centre line) or BBC (as strict, and the slot level).", 0
 hlp_weap:
         defm    "A (or 0) fires the laser. T targets a missile, F fires it", $7F
         defm    "and U unarms it. E sets off the ECM, W the energy bomb, Q", $7F

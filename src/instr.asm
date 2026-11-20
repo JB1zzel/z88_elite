@@ -331,10 +331,16 @@ ic_dkc: ld      a,(V_STRICT)            ; the docking setting (row 7), when it c
         cp      (hl)
         jr      z,ic_cap
         ld      (hl),a
-        ld      hl,dk_sp
-        and     a
-        jr      z,ic_dk
-        ld      hl,dk_st
+        ld      hl,dk_sp            ; 7 bytes a name
+        ld      e,a
+        add     a,a
+        add     a,a
+        add     a,a
+        sub     e
+        add     a,l
+        ld      l,a
+        jr      nc,ic_dk
+        inc     h
 ic_dk:  push    hl
         ld      hl,dk_s
         call    puts
@@ -369,8 +375,7 @@ cap_v:  defm    "20/s  "
 cap_t:  defm    "20/s  ", "25/s  ", "off   ", "12.5/s", "16.7/s"      ; V_CAP 0-4
 dk_s:   defb    1,'2','H','1',1,'3','@',32+28,32+7
         defm    "Docking (=):   ",0
-dk_sp:  defm    "normal",0
-dk_st:  defm    "strict",0
+dk_sp:  defm    "normal",0, "strict",0, "BBC   ",0     ; V_STRICT 0-2
 
 ; missiles: 4 cells at column 3, row 6.  The last ready missile shows the arm state
 ; ($D047: 1 = armed 'S', 2 = locked 'T'), as the Spectrum colours its indicator.

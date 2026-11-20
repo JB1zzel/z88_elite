@@ -382,10 +382,13 @@ zb_sc:  push    af
         jr      z,zb_nd
         and     a
         jr      z,zb_nd
-        ld      hl,V_STRICT
+        ld      hl,V_STRICT     ; normal, strict, BBC, normal ...
         ld      a,(hl)
-        xor     1
-        ld      (hl),a
+        inc     a
+        cp      3
+        jr      c,zb_sd
+        xor     a
+zb_sd:  ld      (hl),a
 zb_nd:  ld      a,(V_KEYS+3)        ; - (bit 7 of row A11): a new press moves the frame
         and     $80                 ; cap on
         ld      hl,V_CAPK

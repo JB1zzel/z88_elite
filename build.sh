@@ -17,13 +17,13 @@ $M -b -g -m ovl.asm                                        # -> ovl.def (glue da
 test $(stat -c%s ovl.bin) -le $((0x8445-0x8391))
 $M -I$D/def -b -g -m ovl3.asm                              # small glue routines (9852-988D)
 test $(stat -c%s ovl3.bin) -le $((0x988E-0x9852)) || { echo "ovl3.asm too big: $(stat -c%s ovl3.bin)"; exit 1; }
+$M -I$D/def -b -g -m snd.asm                               # speaker helpers, beeper, condition scan (978B-982D)
+test $(stat -c%s snd.bin) -le $((0x982E-0x978B)) || { echo "snd.asm too big"; exit 1; }
 for m in chart6:0x7FC1:0x8042 chart3:0x8083:0x80D1 chart5:0x9B02:0x9B4A chart4:0x85A2:0x85E0 dock:0x85E0:0x8619 chart:0x8446:0x85A2; do
   IFS=: read n a e <<< "$m"                                # the charts, over dead game code
   $M -I$D/def -b -g -m $n.asm
   test $(stat -c%s $n.bin) -le $((e-a)) || { echo "$n.asm too big: $(stat -c%s $n.bin) (room $((e-a)))"; exit 1; }
 done
-$M -I$D/def -b -g -m snd.asm                               # speaker helpers, beeper, condition scan (978B-982D)
-test $(stat -c%s snd.bin) -le $((0x982E-0x978B)) || { echo "snd.asm too big"; exit 1; }
 $M -I$D/def -b -g -m ovl4.asm                              # (7D12-7D54)
 test $(stat -c%s ovl4.bin) -le $((0x7D55-0x7D12)) || { echo "ovl4.asm too big: $(stat -c%s ovl4.bin)"; exit 1; }
 $M -I$D/def -b -g -oglue.bin @glue.prj                 # glue modules -> glue.def (jt_*)
