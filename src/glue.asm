@@ -541,6 +541,8 @@ zx_extra:
         defb    7,$04, 3,$40                            ; M   <- RIGHT
         defb    0,$04, 1,$40                            ; X   <- UP
         defb    1,$02, 2,$40                            ; S   <- DOWN
+        defb    0,$01, 0,$80                            ; CAPS SHIFT + 0 (the Spectrum's
+        defb    4,$01, 0,$80                            ; DELETE) <- DEL (row A8, bit 7)
         defb    $FF
 
 ; --- frame wait (replaces HALT) -------------------------------------------------------------

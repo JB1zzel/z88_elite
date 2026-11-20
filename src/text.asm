@@ -842,7 +842,8 @@ tx_erase:
         call    tx_cell
         jr      nz,te_x2
         ld      a,($D045)
-        ld      e,a
+        inc     a                       ; (the game's cell: column $D045 + 1, as its
+        ld      e,a                     ; own erase, $50A1 + $D045 - 1 + 1)
         call    tx_blank
 te_x2:  pop     hl
         xor     a
