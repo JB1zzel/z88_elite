@@ -389,7 +389,19 @@ zb_sc:  push    af
         jr      c,zb_sd
         xor     a
 zb_sd:  ld      (hl),a
-zb_nd:  ld      a,(V_KEYS+3)        ; - (bit 7 of row A11): a new press moves the frame
+zb_nd:  ld      a,(V_KEYS+4)        ; ] (bit 7 of row A12): a new press: 16 or 8
+        and     $80                 ; stardust specks
+        ld      hl,V_DSK
+        cp      (hl)
+        ld      (hl),a
+        jr      z,zb_nu
+        and     a
+        jr      z,zb_nu
+        ld      hl,V_DUSTN
+        ld      a,(hl)
+        xor     $18                 ; 16 <-> 8
+        ld      (hl),a
+zb_nu:  ld      a,(V_KEYS+3)        ; - (bit 7 of row A11): a new press moves the frame
         and     $80                 ; cap on
         ld      hl,V_CAPK
         cp      (hl)
@@ -637,9 +649,13 @@ zh_got: di
 zh_n:   ld      b,a
         push    bc
         call    zx_build
+        call    G_KEYSCAN       ; the game's key scan, once: the keys can't change
+        ld      a,($FC09)       ; within the batch (zx_build is once a frame), and
+        ld      (V_K9),a        ; every scan after the first set the same flags
         pop     bc
 zh_int: push    bc
-        call    G_KEYSCAN
+        ld      a,(V_K9)        ; except $FC09, which G_RATES uses and clears each
+        ld      ($FC09),a       ; tick: given back as the scan made it
         call    G_RATES
         push    de              ; the game's sound player, 50 times a second (the
         push    hl              ; Spectrum's frame interrupt, FF3B: CALL 7125 = JP 9579)

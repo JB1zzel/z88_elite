@@ -27,8 +27,8 @@ done
 $M -I$D/def -b -g -m ovl4.asm                              # (7D12-7D54)
 test $(stat -c%s ovl4.bin) -le $((0x7D55-0x7D12)) || { echo "ovl4.asm too big: $(stat -c%s ovl4.bin)"; exit 1; }
 $M -I$D/def -b -g -oglue.bin @glue.prj                 # glue modules -> glue.def (jt_*)
-G=$(stat -c%s glue.bin); test $G -le $((0x3E00-0x2000)) || { echo "glue too big: $G (variables at \$3E00)"; exit 1; }
-for m in chart2:0xE531:0xE6AD; do
+G=$(stat -c%s glue.bin); test $G -le $((0x3E70-0x2000)) || { echo "glue too big: $G (variables at \$3E70)"; exit 1; }
+for m in chart2:0xE531:0xE6AD faces:0xBCD4:0xBE00; do
   IFS=: read n a e <<< "$m"                                # the charts, over dead game code
   $M -I$D/def -b -g -m $n.asm
   test $(stat -c%s $n.bin) -le $((e-a)) || { echo "$n.asm too big: $(stat -c%s $n.bin) (room $((e-a)))"; exit 1; }
@@ -42,7 +42,7 @@ dd if=fast.bin of=elite_z88.bin bs=1 seek=$((0xB047-0x4000)) conv=notrunc status
 dd if=fast2.bin of=elite_z88.bin bs=1 seek=$((0xB349-0x4000)) conv=notrunc status=none
 dd if=ovl.bin of=elite_z88.bin bs=1 seek=$((0x8391-0x4000)) conv=notrunc status=none
 python3 -I ../tools/mksqfont.py elite_z88.bin sq5.inc 0xCA00    # the squeezed font, ready made
-for m in snd:0x978B ovl3:0x9852 ovl4:0x7D12 chart6:0x7FC1 chart:0x8446 chart2:0xE531 chart3:0x8083 chart4:0x85A2 dock:0x85E0 chart5:0x9B02; do
+for m in snd:0x978B ovl3:0x9852 ovl4:0x7D12 chart6:0x7FC1 chart:0x8446 chart2:0xE531 chart3:0x8083 chart4:0x85A2 dock:0x85E0 chart5:0x9B02 faces:0xBCD4; do
   IFS=: read n a <<< "$m"
   dd if=$n.bin of=elite_z88.bin bs=1 seek=$((a-0x4000)) conv=notrunc status=none
 done

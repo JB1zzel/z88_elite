@@ -16,6 +16,21 @@ the Filer and press INDEX; on OZ 5 elite-oz5.app alone does the same (compressed
 Installed, Elite takes 64K of RAM for itself and still copies the game into three
 more banks to run (112K in all; the card version needs only the 48K).  It finds its
 game banks wherever the install put them.
+Start-up: the Spectrum's loading picture, still in the game image (the Spectrum's
+screen memory), scrolls up the map and off the top before the title, about three
+seconds; the Torus and Firebird logos are left out (src/app.asm, intro).
+
+Faces: which faces of a ship can be seen is worked out the BBC Micro's way (the
+ship's position turned into the ship's own frame once, then one dot product a
+face), in place of the Spectrum's routine (src/faces.asm, at BCD4).  About 40%
+less time for that step, about 10% more frames with a big ship in view.  It
+agrees with the original on 99.6% of faces in tests; the rest are within a few
+percent of edge-on, where exact maths sides with the new routine more often.
+
+Stardust (the ] key in flight): 16 specks, as on the Spectrum (the default), or
+8.  The dust is about 15% of a flight frame on a real Z88; 8 specks make empty
+space noticeably smoother (about a quarter more frames there), less in combat.
+
 Docking (the = key in flight: normal, strict, BBC; normal by default).  Strict
 adds the BBC Micro's cone check to the Spectrum's docking rules.  The Spectrum docks you anywhere on the
 station's face once its slot faces you; strict docking also needs the station

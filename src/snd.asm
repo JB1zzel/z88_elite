@@ -10,7 +10,7 @@
                                         ; 9788 JP JT_Z_BLIP (978B-982D); segment 2
         include "blink.def"
         include "elite.inc"
-        xdef    s_and, s_on, s_off, s_be, beeper, snd_cond, dk_roll, dk_ok, cm_title
+        xdef    s_and, s_on, s_off, s_be, beeper, snd_cond, dk_roll, dk_ok, cm_title, s_dust
 
 s_and:  and     $18             ; 95B0: AND $18 / OUT ($FE),A
         jr      spk_a
@@ -99,6 +99,12 @@ cm_title:
         ld      bc,$005D
         ldir
         jp      $D90A
+
+; s_dust: the stardust count (78C7, LD A,$10 / LD ($7F7C),A): 16 as on the Spectrum,
+; or 8 (the ] key: V_DUSTN), about 7% of a flight frame saved (here for room)
+s_dust: ld      a,(V_DUSTN)
+        ld      ($7F7C),a
+        ret
 
 ; snd_cond (kept here for room): the condition from the ship slots 1-7 ($27 bytes from
 ; $6048; in use: energy $22 nonzero; cargo, boulders, pods: $26 bit 3) -> A = 'G' none,

@@ -20,6 +20,7 @@
         xdef    hk_glyph
         xdef    init_tables
         xdef    scan_restore
+        xdef    fmul8
         xdef    view_copy
         xdef    z_blip
         xdef    z_circ
@@ -585,7 +586,22 @@ zc_go:
         bit     2,b
         jr      nz,zc_x1
         inc     d
-zc_x1:  ld      hl,$0080
+zc_x1:  ld      a,($861D)               ; wholly left or right of the view (the planet
+        ld      l,a                     ; or sun off to one side: every row was worked
+        ld      h,0                     ; out and clipped away): offset - r >= 128
+        ex      de,hl                   ; (Spectrum pixels, the view's half width)
+        push    hl
+        or      a
+        sbc     hl,de
+        pop     de
+        jr      c,zc_in
+        ld      a,h
+        or      a
+        jp      nz,zcr_x
+        ld      a,l
+        cp      $80
+        jp      nc,zcr_x
+zc_in:  ld      hl,$0080
         bit     0,b                     ; bit 0 set: right of centre
         jr      z,zc_x2
         add     hl,de
@@ -594,6 +610,17 @@ zc_x2:  or      a
         sbc     hl,de
 zc_x3:  call    scale_x
         ld      (CCX),hl
+        call    cl8                     ; CLIM = max(cx, VW-1-cx), each held to 0..255:
+        ld      c,a                     ; a row wider than that misses the view on both
+        ex      de,hl                   ; sides (the big planet or sun around the view)
+        ld      hl,VW-1
+        or      a
+        sbc     hl,de
+        call    cl8
+        cp      c
+        jr      nc,zc_lm
+        ld      a,c
+zc_lm:  ld      (CLIM),a
         ld      a,($861A)               ; row offset; bit 3 clear = offset + 256
         ld      e,a
         ld      d,0
@@ -683,6 +710,9 @@ zr_1:   ld      a,d
         jr      z,zr_2
         dec     a
 zr_2:   ld      d,a                     ; D = outer end, E = w
+        ld      a,(CLIM)
+        cp      e
+        jr      c,zr_nx                 ; both ends outside the view
         ld      a,(CY)                  ; row address parts for span
         ld      b,a
         and     7
@@ -719,7 +749,7 @@ zr_2:   ld      d,a                     ; D = outer end, E = w
         sbc     hl,de
         pop     de
         call    span
-        ld      hl,CY
+zr_nx:  ld      hl,CY
         inc     (hl)
         ld      hl,CDY
         dec     (hl)
@@ -728,6 +758,36 @@ zr_2:   ld      d,a                     ; D = outer end, E = w
         jp      nz,zr_lp
 zcr_x:  pop     iy
         pop     ix
+        ret
+; fmul8: HL = B * C exactly, for faces.asm (in game memory, short of room): the game's
+; quarter-square multiply (AB34: T(m) - T(n), m = (B+C)/2, n = |B-C|/2, T = squares)
+; plus min(B, C) when B + C is odd, which it drops.  B, C, D, E kept.
+fmul8:  push    de
+        call    $AB34
+        pop     de
+        ld      a,b
+        add     a,c
+        rra
+        ret     nc
+        ld      a,b
+        cp      c
+        jr      c,m8_m
+        ld      a,c
+m8_m:   add     a,l
+        ld      l,a
+        ret     nc
+        inc     h
+        ret
+
+cl8:    bit     7,h                     ; HL (signed) held to 0..255 in A
+        jr      nz,cl8_0
+        ld      a,h
+        or      a
+        ld      a,l
+        ret     z
+        ld      a,255
+        ret
+cl8_0:  xor     a
         ret
 
 ; make_w: CWTAB[dy] = rx * sqrt(1 - (dy/ry)^2) for dy = 0..ry.  One division for the

@@ -30,6 +30,8 @@ app_entrypoint:
         ld      bc,$01FF        ; would find the old instance's state (in flight)
         ld      (hl),0
         ldir
+        ld      a,16            ; stardust: the Spectrum's 16 specks to start with
+        ld      ($3F24),a       ; (V_DUSTN)
         ld      hl,glue_bin     ; glue code into application RAM
         ld      de,$2000
         ld      bc,glue_end-glue_bin
@@ -177,6 +179,7 @@ ws_lp:  ld      b,(hl)
         ld      a,1
         ld      (TI_MODE),a        ; (no instruments yet: the title comes first)
         call    JT_Z_REDRAW        ; windows and map
+        call    intro              ; the loading picture scrolls up the map
         ld      a,(V_BANKS)
         ld      b,a
         ld      c,1
@@ -186,6 +189,180 @@ ws_lp:  ld      b,(hl)
         ld      c,2
         oz      Os_Mpb
         jp      JT_Z_START         ; glue binds segment 3 and starts the game
+
+; intro: the Spectrum's loading picture, which the tape image leaves in the Spectrum's
+; screen memory (game bank 1, $4000-$5AFF; the game clears it when it starts), scrolled
+; up through the map from below and off the top, three lines a step (a step takes about
+; 34 ms on a Z88; never less than 25 ms, by TIM0, on a faster emulator): about three
+; seconds.  Light colours (green, cyan, yellow, white) are
+; the picture, dark pixels on the Z88; the Torus and Firebird logos are left out.
+defc FR_S = $3F08                       ; V_TMP: the top line shown (signed)
+defc FR_T = $3F28                       ; V_LOG: TIM0 at the last step
+intro:  ld      a,(V_BANKS)
+        ld      b,a
+        ld      c,1
+        oz      Os_Mpb                  ; game bank 1 (the picture) -> segment 1
+        ld      de,$5800                ; each attribute cell: pixel = ink or paper,
+in_cv:  ld      a,(de)                  ; light or dark: out = (b AND m1) XOR m2,
+        ld      b,a                     ; m1 = ink light XOR paper light, m2 = paper light
+        and     7
+        cp      4
+        sbc     a,a
+        cpl
+        ld      c,a                     ; ink light: $FF
+        ld      a,b
+        rrca
+        rrca
+        rrca
+        and     7
+        cp      4
+        sbc     a,a
+        cpl                             ; paper light: $FF
+        ld      b,a
+        xor     c
+        ld      c,b                     ; C = m2
+        ld      b,a                     ; B = m1
+        ld      a,d                     ; the cell's top line
+        and     3
+        add     a,a
+        add     a,a
+        add     a,a
+        or      $40
+        ld      h,a
+        ld      l,e
+        rept    8
+        ld      a,(hl)
+        and     b
+        xor     c
+        ld      (hl),a
+        inc     h
+        endr
+        inc     de
+        ld      a,d
+        cp      $5B
+        jr      nz,in_cv
+        ld      c,0                     ; the Torus logo (x 187-255, lines 5-85) and the
+in_bt:  ld      a,c                     ; Firebird logo (x 193-255, lines 168-191) out
+        cp      91
+        jr      c,in_b1
+        cp      168
+        jr      c,in_bn
+        call    in_la
+        ld      a,l
+        or      24
+        ld      l,a
+        jr      in_b2
+in_b1:  call    in_la
+        ld      a,l
+        or      23
+        ld      l,a
+        ld      a,(hl)
+        and     $E0
+        ld      (hl),a
+        inc     l
+in_b2:  ld      b,8
+        xor     a
+in_b3:  ld      (hl),a
+        inc     l
+        ld      a,l
+        and     31
+        jr      z,in_bn
+        xor     a
+        djnz    in_b3
+in_bn:  inc     c
+        ld      a,c
+        cp      192
+        jr      nz,in_bt
+        ld      a,(R_MAPB)
+        ld      b,a
+        ld      c,2
+        oz      Os_Mpb                  ; the map -> segment 2
+        ld      hl,-63              ; (-63 + 3n reaches 192)
+        ld      (FR_S),hl
+        in      a,($D0)
+        ld      (FR_T),a
+in_st:  ld      hl,FR_T                 ; at most a step every 25 ms
+in_wt:  in      a,($D0)
+        sub     (hl)
+        jr      nc,in_w2
+        add     a,200
+in_w2:  cp      5
+        jr      c,in_wt
+        in      a,($D0)
+        ld      (hl),a
+        ld      c,0                     ; map line i = 0..63: picture line FR_S + i
+in_ln:  ld      hl,(R_MAPA)
+        ld      a,c
+        rrca
+        rrca
+        rrca
+        and     7
+        add     a,h
+        ld      h,a
+        ld      a,c
+        and     7
+        add     a,l
+        ld      l,a
+        ex      de,hl                   ; DE = the map: 8 bytes a cell, cells 8 apart
+        ld      hl,(FR_S)
+        ld      b,0
+        add     hl,bc
+        ld      b,32
+        bit     7,h
+        jr      nz,in_bl
+        ld      a,h
+        or      a
+        jr      nz,in_bl
+        ld      a,l
+        cp      192
+        jr      nc,in_bl
+        call    in_la
+in_cp:  ld      a,(hl)
+        inc     l
+        ld      (de),a
+        ld      a,e
+        add     a,8
+        ld      e,a
+        djnz    in_cp
+        jr      in_nx
+in_bl:  xor     a
+        ld      (de),a
+        ld      a,e
+        add     a,8
+        ld      e,a
+        djnz    in_bl
+in_nx:  inc     c
+        ld      a,c
+        cp      64
+        jr      nz,in_ln
+        ld      hl,(FR_S)
+        inc     hl
+        inc     hl
+        inc     hl
+        ld      (FR_S),hl
+        ld      de,192
+        or      a
+        sbc     hl,de
+        jr      nz,in_st
+        ret
+; in_la: HL = the Spectrum screen address of line A (x = 0)
+in_la:  ld      l,a
+        and     7
+        ld      h,a
+        ld      a,l
+        and     $C0
+        rrca
+        rrca
+        rrca
+        or      h
+        or      $40
+        ld      h,a
+        ld      a,l
+        and     $38
+        add     a,a
+        add     a,a
+        ld      l,a
+        ret
 
 no_mem2:
         pop     af
@@ -381,7 +558,8 @@ hlp_port:
         defm    "instruments natively, puts all text in OZ windows, reads the", $7F
         defm    "keyboard directly in flight, and plays the game's own sound", $7F
         defm    "on the Z88's speaker. The Lenslok check is gone. Needs an", $7F
-        defm    "expanded Z88 with 48K of free RAM, and OZ 3.0 or later.", 0
+        defm    "expanded Z88 with 48K of free RAM, and OZ 3.0 or later.", $7F
+        defm    "In flight, ] switches the stardust between 16 and 8 specks.", 0
 end_of_code:
         defs    $3FC0-end_of_code
         doraplf [in_dor & $3FFF, BANK_APPL]
