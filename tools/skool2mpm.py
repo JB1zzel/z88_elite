@@ -18,6 +18,9 @@ G = dict(halt='JT_Z_HALT', st_bit7hl='JT_ST_BIT7HL', st_ldafc0d='JT_ST_LDAFC0D',
 
 # multi-byte patches: address -> (bytes replaced, [instructions])
 PATCH = {
+    0xF51F: (25, ['DEFM "PRESS ANY KEY TO SAVE   ",$00']),                  # message 2 (was START TAPE, THEN PRESS ANY KEY): same length,
+    0xF538: (13, ['DEFM "NO SUCH FILE",$00']),                                # message 3 (was TAPE LOADING ERROR): the tokens after stay put
+    0x7391: (3, ['CALL CM_TITLE']),                                     # title Y: the commander block filled first (snd.asm)
     0xB58F: (6, ['JP DK_CHECK', 'NOP', 'NOP', 'NOP']),                  # docked: strict docking's cone check first (dock.asm)
     0x95B0: (4, ['CALL S_AND', 'NOP']),                                 # the game's own sound code (9527-96BE), in place: each
     0x95F8: (4, ['CALL S_ON', 'NOP']),                                  # OUT ($FE),A and the instruction before it -> the Z88

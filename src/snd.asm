@@ -10,7 +10,7 @@
                                         ; 9788 JP JT_Z_BLIP (978B-982D); segment 2
         include "blink.def"
         include "elite.inc"
-        xdef    s_and, s_on, s_off, s_be, beeper, snd_cond, dk_roll, dk_ok
+        xdef    s_and, s_on, s_off, s_be, beeper, snd_cond, dk_roll, dk_ok, cm_title
 
 s_and:  and     $18             ; 95B0: AND $18 / OUT ($FE),A
         jr      spk_a
@@ -86,6 +86,19 @@ dk_roll:ld      a,(V_STRICT)
 dk_ok:  ld      a,1             ; docked (B58F)
         ld      ($9C9A),a
         ret
+
+; cm_title: the commander menu from the title screen ("Load New Commander", Y: 7391,
+; here for room).  The menu works on the game's current commander block ($D054), which
+; the game fills from the saved one ($D232) only when play starts (D29B); before that
+; it still holds the tape loader's code, and saving it (2) made that the commander:
+; a junk Elite fugitive with millions, who died on launch.  So fill it first, as
+; D29B does, then the menu (D90A).
+cm_title:
+        ld      hl,$D232
+        ld      de,$D054
+        ld      bc,$005D
+        ldir
+        jp      $D90A
 
 ; snd_cond (kept here for room): the condition from the ship slots 1-7 ($27 bytes from
 ; $6048; in use: energy $22 nonzero; cargo, boulders, pods: $26 bit 3) -> A = 'G' none,
