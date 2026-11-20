@@ -321,61 +321,13 @@ iu_next:
         call    OV_COND                 ; (chart2.asm)
         ld      hl,IN_COND
         cp      (hl)
-        jr      z,ic_dkc
+        ret     z
         ld      (hl),a
         ld      (ic_c),a
         ld      hl,ic_s
-        call    puts
-ic_dkc: ld      a,(V_STRICT)            ; the docking setting (row 7), when it changed
-        ld      hl,IN_DOCK
-        cp      (hl)
-        jr      z,ic_cap
-        ld      (hl),a
-        ld      hl,dk_sp            ; 7 bytes a name
-        ld      e,a
-        add     a,a
-        add     a,a
-        add     a,a
-        sub     e
-        add     a,l
-        ld      l,a
-        jr      nc,ic_dk
-        inc     h
-ic_dk:  push    hl
-        ld      hl,dk_s
-        call    puts
-        pop     hl
-        call    puts
-ic_cap: ld      a,(V_CAP)               ; the frame cap (row 6, under the messages), when
-        inc     a                       ; it changed or the window was redrawn
-        ld      hl,IN_FCAP
-        cp      (hl)
-        ret     z
-        ld      (hl),a
-        dec     a
-        ld      e,a                     ; its text: 6 characters a setting
-        add     a,a
-        add     a,e
-        add     a,a
-        ld      e,a
-        ld      d,0
-        ld      hl,cap_t
-        add     hl,de
-        ld      de,cap_v
-        ld      bc,6
-        ldir
-        ld      hl,cap_s
-        jp      puts
+        jp      puts                    ; (the settings are in the Options menu, not shown)
 ic_s:   defb    1,'2','H','1',1,'3','@',32+23,32+3,1,'2','+','R',' '
 ic_c:   defb    'G',' ',1,'2','-','R',0
-cap_s:  defb    1,'2','H','1',1,'3','@',32+28,32+6
-        defm    "Speed cap (-): "
-cap_v:  defm    "20/s  "
-        defb    0
-cap_t:  defm    "20/s  ", "25/s  ", "off   ", "12.5/s", "16.7/s"      ; V_CAP 0-4
-dk_s:   defb    1,'2','H','1',1,'3','@',32+28,32+7
-        defm    "Docking (=):   ",0
-dk_sp:  defm    "normal",0, "strict",0, "BBC   ",0     ; V_STRICT 0-2
 
 ; missiles: 4 cells at column 3, row 6.  The last ready missile shows the arm state
 ; ($D047: 1 = armed 'S', 2 = locked 'T'), as the Spectrum colours its indicator.

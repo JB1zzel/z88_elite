@@ -961,7 +961,7 @@ sp_lp:  ld      a,(hl)
 
 
 ; ---------------------------------------------------------------------------------------
-cap_ms: defb    10, 8, 0, 16, 12        ; V_CAP 0-4: 20, 25/s, off, 12.5, 16.7/s
+cap_ms: defb    0, 33, 25, 16           ; V_CAP 0-3: off (the default), 6, 8, 12.5 a second
 
 ; view_copy: the view (8 rows x 168 bytes) into the left of the map (map bound in seg. 2)
 view_copy:

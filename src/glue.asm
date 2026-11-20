@@ -375,12 +375,8 @@ zb_sc:  push    af
         rlca
         jr      c,zb_sc
         ld      a,(V_KEYS+2)        ; = (bit 7 of row A10 on a Z88 and in OZvm; Z88e.c
-        and     $80                 ; has = and - swapped; neither is a Spectrum key):
-        ld      hl,V_DKK            ; a new press turns strict docking on or off
-        cp      (hl)
-        ld      (hl),a
-        jr      z,zb_nd
-        and     a
+        ld      hl,V_DKK            ; has = and - swapped; neither is a Spectrum key):
+        call    zb_new              ; a new press: the next docking setting
         jr      z,zb_nd
         ld      hl,V_STRICT     ; normal, strict, BBC, normal ...
         ld      a,(hl)
@@ -389,29 +385,21 @@ zb_sc:  push    af
         jr      c,zb_sd
         xor     a
 zb_sd:  ld      (hl),a
-zb_nd:  ld      a,(V_KEYS+4)        ; ] (bit 7 of row A12): a new press: 16 or 8
-        and     $80                 ; stardust specks
-        ld      hl,V_DSK
-        cp      (hl)
-        ld      (hl),a
-        jr      z,zb_nu
-        and     a
+zb_nd:  ld      a,(V_KEYS+4)        ; ] (bit 7 of row A12): a new press: 8 or 16
+        ld      hl,V_DSK            ; stardust specks
+        call    zb_new
         jr      z,zb_nu
         ld      hl,V_DUSTN
         ld      a,(hl)
         xor     $18                 ; 16 <-> 8
         ld      (hl),a
 zb_nu:  ld      a,(V_KEYS+3)        ; - (bit 7 of row A11): a new press moves the frame
-        and     $80                 ; cap on
-        ld      hl,V_CAPK
-        cp      (hl)
-        ld      (hl),a
+        ld      hl,V_CAPK           ; cap on
+        call    zb_new
         jr      z,zb_nc
-        and     a
-        jr      z,zb_nc
-        ld      a,(V_CAP)           ; next setting: 20, 25/s, off, 12.5, 16.7/s, 20 ...
+        ld      a,(V_CAP)           ; next setting: off, 6, 8, 12.5 a second, off ...
         inc     a
-        cp      5
+        cp      4
         jr      c,zb_c2
         xor     a
 zb_c2:  ld      (V_CAP),a
@@ -727,6 +715,7 @@ zh_ozl: push    bc
         oz      Os_Tin
         pop     bc
         jr      c,zh_err
+        call    zh_opt          ; an Options menu command?
         djnz    zh_ozl
         jr      zh_ok
 zh_err:
@@ -972,6 +961,41 @@ zr_mclr:
 
 
 
+
+
+zb_new: and     $80                 ; key bit 7 of A against its last state at (HL):
+        cp      (hl)                ; NZ for a new press (A, flags change)
+        ld      (hl),a
+        ret     z
+        and     a
+        ret
+
+
+; zh_opt: the Options menu (app.asm, in_commands): A = the command, $C0-$C8.  Docking
+; BBC, strict, Spectrum (V_STRICT 2, 1, 0); stars 8, 16 (V_DUSTN); frame cap off, 6, 8,
+; 12.5 a second (V_CAP 0-3).  Anything else: nothing.  B kept.
+zh_opt: sub     $C0
+        ret     c
+        cp      3
+        jr      nc,zo_1
+        neg
+        add     a,2
+        ld      (V_STRICT),a
+        ret
+zo_1:   sub     3
+        cp      2
+        jr      nc,zo_2
+        add     a,a
+        add     a,a
+        add     a,a
+        add     a,8
+        ld      (V_DUSTN),a
+        ret
+zo_2:   sub     2
+        cp      4
+        ret     nc
+        ld      (V_CAP),a
+        ret
 
 jt_spk_off:                     ; the speaker off: COM as OZ has it
         push    af

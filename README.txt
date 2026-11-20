@@ -27,11 +27,10 @@ less time for that step, about 10% more frames with a big ship in view.  It
 agrees with the original on 99.6% of faces in tests; the rest are within a few
 percent of edge-on, where exact maths sides with the new routine more often.
 
-Stardust (the ] key in flight): 16 specks, as on the Spectrum (the default), or
-8.  The dust is about 15% of a flight frame on a real Z88; 8 specks make empty
+Stardust (the ] key in flight): 8 specks (the default), or 16 as on the Spectrum.  The dust is about 15% of a flight frame on a real Z88; 8 specks make empty
 space noticeably smoother (about a quarter more frames there), less in combat.
 
-Docking (the = key in flight: normal, strict, BBC; normal by default).  Strict
+Docking (the = key in flight: normal, strict, BBC; BBC by default).  Strict
 adds the BBC Micro's cone check to the Spectrum's docking rules.  The Spectrum docks you anywhere on the
 station's face once its slot faces you; strict docking also needs the station
 within about 21 degrees of straight ahead, or you bounce off and take damage, as
@@ -56,11 +55,16 @@ Keys (the Spectrum's; LEFT SHIFT = CAPS SHIFT, RIGHT SHIFT = SYMBOL SHIFT)
   Weapons     A or 0 laser, T target missile, F fire it, U unarm,
               E ECM, W energy bomb, Q escape pod, C docking computer
               TAB forces an encounter (added for this version)
-  Speed cap   - (minus) cycles the frame cap: 20 (default), 25, off, 12.5, 16.7
-              frames a second; shown in flight under the messages.  On a
-              fast emulator (OZvm at x5) it keeps combat at an even speed
-              while each frame is drawn cleanly; a real Z88 is seldom faster
-              than the cap - added for this version
+  Options     the OZ MENU's Options topic sets the docking rules (BBC, the
+              default; strict; the Spectrum's), the stars (8, the default;
+              16 as on the Spectrum) and the frame cap (off, the default; 6,
+              8 or 12.5 frames a second).  In flight - (minus), = and ] step
+              the same settings.  Nothing is shown on the game screen.
+              A stock Z88 plays at the Spectrum's pace (near the station
+              both turn it in 11 seconds); on a fast emulator a cap of 6-8
+              comes closest to that in busy scenes.  The cap keeps combat at
+              an even speed on a fast emulator (OZvm at x5) while each frame
+              is drawn cleanly - added for this version
   Condition   in flight, the box under the compass: G nothing about,
               A other ships about, R danger (hostile ship, or 2 energy
               banks empty) - added for this version

@@ -30,8 +30,10 @@ app_entrypoint:
         ld      bc,$01FF        ; would find the old instance's state (in flight)
         ld      (hl),0
         ldir
-        ld      a,16            ; stardust: the Spectrum's 16 specks to start with
-        ld      ($3F24),a       ; (V_DUSTN)
+        ld      a,8             ; stardust: 8 specks to start with (] gives the
+        ld      ($3F24),a       ; Spectrum's 16; V_DUSTN)
+        ld      a,2             ; docking: the BBC's rules to start with (=: normal,
+        ld      (V_STRICT),a    ; strict, BBC)
         ld      hl,glue_bin     ; glue code into application RAM
         ld      de,$2000
         ld      bc,glue_end-glue_bin
@@ -450,6 +452,7 @@ in_dor:
 in_topics:
         defb    0
         mthtpc  ["Info"], TPCF_INFO|TPCF_HELP, (hlp_info-in_help)
+        mthtpc  ["Options"]
         mthtpc  ["Keys"], TPCF_HELP, (hlp_keys-in_help)
         mthtpc  ["Credits"], TPCF_HELP, (hlp_cred-in_help)
         defb    0
@@ -459,6 +462,16 @@ in_commands:
         mthcmd  (0, , ["The game"],      CMDF_HELP, (hlp_game-in_help))
         mthcmd  (0, , ["The screen"],    CMDF_HELP, (hlp_scr-in_help))
         mthcmd  (0, , ["Leaving"],       CMDF_HELP, (hlp_leave-in_help))
+        defb    1
+        mthcmd  ($C0, , ["Docking: BBC rules"])          ; the glue's zh_opt acts on these
+        mthcmd  ($C1, , ["Docking: strict"])
+        mthcmd  ($C2, , ["Docking: Spectrum"])
+        mthcmd  ($C3, , ["Stars: 8"],               CMDF_COLUMN)
+        mthcmd  ($C4, , ["Stars: 16 (Spectrum)"])
+        mthcmd  ($C5, , ["Frame cap: off"],         CMDF_COLUMN)
+        mthcmd  ($C6, , ["Frame cap: 6 a second"])
+        mthcmd  ($C7, , ["Frame cap: 8 a second"])
+        mthcmd  ($C8, , ["Frame cap: 12.5 a second"])
         defb    1
         mthcmd  (0, , ["Flying"],        CMDF_HELP, (hlp_fly-in_help))
         mthcmd  (0, , ["Weapons"],       CMDF_HELP, (hlp_weap-in_help))
@@ -510,10 +523,10 @@ hlp_leave:
 hlp_fly:
         defm    "S and X climb and dive, N and M roll. SPACE speeds up and", $7F
         defm    "RIGHT SHIFT slows down. 1-4 show the front, rear, left and", $7F
-        defm    "right views. Docked, 1 launches. - caps the frame rate: 20", $7F
-        defm    "(default), 25, off, 12.5 or 16.7 a second, for fast", $7F
-        defm    "emulators. = sets docking: normal, strict (near the slot's", $7F
-        defm    "centre line) or BBC (as strict, and the slot level).", 0
+        defm    "right views. Docked, 1 launches. The Options menu sets the", $7F
+        defm    "docking rules (BBC, the default; strict; the Spectrum's),", $7F
+        defm    "the stars (8, the default, or the Spectrum's 16) and a frame", $7F
+        defm    "cap (off, the default; 6, 8 or 12.5 a second for emulators).", 0
 hlp_weap:
         defm    "A (or 0) fires the laser. T targets a missile, F fires it", $7F
         defm    "and U unarms it. E sets off the ECM, W the energy bomb, Q", $7F
@@ -559,7 +572,7 @@ hlp_port:
         defm    "keyboard directly in flight, and plays the game's own sound", $7F
         defm    "on the Z88's speaker. The Lenslok check is gone. Needs an", $7F
         defm    "expanded Z88 with 48K of free RAM, and OZ 3.0 or later.", $7F
-        defm    "In flight, ] switches the stardust between 16 and 8 specks.", 0
+        defm    "In flight - = and ] also step the frame cap, docking, stars.", 0
 end_of_code:
         defs    $3FC0-end_of_code
         doraplf [in_dor & $3FFF, BANK_APPL]
